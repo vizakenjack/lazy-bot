@@ -2,12 +2,15 @@
 
 module LazyBot
   class Engine
-    def initialize
+    attr_reader :config
+
+    def initialize(**args)
       @actions = []
       @callbacks = []
+      @config = Config.new(**args)
 
-      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: Config.timeout + 60 }
-      client = Telegram::Bot::Client.new(Config.telegram_token, opts)
+      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: config.timeout + 60 }
+      client = Telegram::Bot::Client.new(config.telegram_token, opts)
       @bot = DecoratedBotClient.new(client)
 
       raise StandardError, 'Bot ENV is not set' unless ENV['BOT_ENV']

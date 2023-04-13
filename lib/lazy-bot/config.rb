@@ -2,42 +2,17 @@
 
 module LazyBot
   class Config
-    class << self
-      # def redis
-      #   @redis ||= RedisProxy.new
-      # end
+    def initialize(**args)
+      @timeout = args[:timeout] || 120
+      @bot_names = args[:bot_names] || []
+      @debug_mode = args[:debug_mode]
+      @socket_path = File.expand_path(args[:socket_path] || "../../shared/tmp/chatbot.sock")
+      @telegram_token = args[:telegram_token]
+      @on_error = args[:on_error]
+    end
 
-      # def last_update_id
-      #   redis.get(UPDATE_ID_KEY).to_i
-      # end
-
-      # def last_update_id=(update_id)
-      #   redis.set(UPDATE_ID_KEY, update_id)
-      # end
-
-      def debug_mode?
-        false
-        # redis.get('telegram_debug_mode').to_i > 0
-      end
-
-      def timeout
-        120
-      end
-
-      def on_error(e)
-      end
-
-      def bot_names
-        ['test']
-      end
-
-      def socket_path
-        File.expand_path("../../shared/tmp/chatbot.sock")
-      end
-
-      def telegram_token
-        raise StandardError, 'Token not set'
-      end
+    def on_error(error)
+      @on_error&.call(error)
     end
   end
 end

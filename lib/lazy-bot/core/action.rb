@@ -67,7 +67,7 @@ module LazyBot
         finish
       end
     rescue Exception => e
-      Config.on_error(e)
+      Engine.сonfig.on_error(e)
       MyLogger.error "message = #{e.message}"
       MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
       raise e if DEVELOPMENT

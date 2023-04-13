@@ -2,6 +2,8 @@
 
 module LazyBot
   class MessageSender
+    extend Forwardable
+
     attr_reader :bot, :text, :chat, :chat_id, :action_response
 
     def initialize(options)
@@ -11,11 +13,13 @@ module LazyBot
       @action_response = build_action_response(options)
     end
 
-    delegate :text, to: :action_response
-    delegate :photo, to: :action_response
-    delegate :parse_mode, to: :action_response
-    delegate :keyboard, to: :action_response
-    delegate :inline, to: :action_response
+    def_delegators :@action_response, :text, :photo, :parse_mode, :keyboard, :inline
+
+    # delegate :text, to: :action_response
+    # delegate :photo, to: :action_response
+    # delegate :parse_mode, to: :action_response
+    # delegate :keyboard, to: :action_response
+    # delegate :inline, to: :action_response
 
     def send
       begin

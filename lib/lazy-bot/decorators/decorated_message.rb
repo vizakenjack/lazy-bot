@@ -4,7 +4,9 @@ require 'delegate'
 
 module LazyBot
   class DecoratedMessage < SimpleDelegator
-    delegate :is_a?, to: :__getobj__
+    extend Forwardable
+    def_delegator :__getobj__, :is_a?
+    # delegate :is_a?, to: :__getobj__
 
     def args(i)
       return nil if content.blank?
@@ -50,9 +52,9 @@ module LazyBot
     end
 
     def reply_to_bot?
-      respond_to?(:reply_to_message) && Config.bot_names.include?(reply_to_message.from.username)
+      respond_to?(:reply_to_message) && Engine.сonfig.bot_names.include?(reply_to_message.from.username)
     rescue Exception => e
-      Config.on_error(e)
+      Engine.сonfig.on_error(e)
       false
     end
 
@@ -81,7 +83,7 @@ module LazyBot
     def mention?
       return false if text.blank?
 
-      Config.bot_names.any? { |name| text.downcase.start_with?("@#{name.downcase}") }
+      Engine.сonfig.bot_names.any? { |name| text.downcase.start_with?("@#{name.downcase}") }
     end
   end
 end
