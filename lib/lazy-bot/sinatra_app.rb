@@ -40,7 +40,7 @@ module LazyBot
         @last_update_id = update_id
         message = Telegram::Bot::Types::Update.new(data).current_message
 
-        BOT.respond_message(message)
+        BOT.engine.respond_message(message)
       elsif LazyBot.config.debug_mode
         puts "Sinatra: skipping same request #{data}"
       end

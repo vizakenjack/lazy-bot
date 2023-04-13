@@ -5,8 +5,8 @@ class MyLogger
 
   DEFAULT_LOGGER_LEVEL = Logger::INFO
 
-  def initialize(logger_name = 'info.log')
-    @logger = Logger.new("./log/#{logger_name}.log")
+  def initialize(logger_name = 'bot.log')
+    @logger = Logger.new("./log/#{logger_name}")
     @logger.level = DEFAULT_LOGGER_LEVEL
   end
 
