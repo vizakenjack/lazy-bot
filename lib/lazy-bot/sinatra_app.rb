@@ -5,7 +5,7 @@ require "sinatra/cross_origin"
 
 module LazyBot
   class SinatraApp < Sinatra::Base
-    set :bind, Engine.сonfig.socket_path
+    set :bind, LazyBot.сonfig.socket_path
 
     configure do
       enable :cross_origin
@@ -33,18 +33,18 @@ module LazyBot
 
       update_id = data["update_id"]
 
-      puts 'Received request' if Engine.сonfig.debug_mode
+      puts 'Received request' if LazyBot.сonfig.debug_mode
 
       if new_request?(update_id)
         @last_update_id = update_id
         message = Telegram::Bot::Types::Update.new(data).current_message
 
         BOT.respond_message(message)
-      elsif Engine.сonfig.debug_mode
+      elsif LazyBot.сonfig.debug_mode
         puts "Sinatra: skipping same request #{data}"
       end
     rescue Exception => e
-      Engine.сonfig.on_error(e)
+      LazyBot.сonfig.on_error(e)
       MyLogger.sinatra.error "Sinatra error #{e}"
     ensure
       status 200

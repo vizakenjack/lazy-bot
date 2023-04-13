@@ -52,9 +52,9 @@ module LazyBot
     end
 
     def reply_to_bot?
-      respond_to?(:reply_to_message) && Engine.сonfig.bot_names.include?(reply_to_message.from.username)
+      respond_to?(:reply_to_message) && LazyBot.сonfig.bot_names.include?(reply_to_message.from.username)
     rescue Exception => e
-      Engine.сonfig.on_error(e)
+      LazyBot.config.on_error(e)
       false
     end
 
@@ -83,7 +83,7 @@ module LazyBot
     def mention?
       return false if text.blank?
 
-      Engine.сonfig.bot_names.any? { |name| text.downcase.start_with?("@#{name.downcase}") }
+      LazyBot.config.bot_names.any? { |name| text.downcase.start_with?("@#{name.downcase}") }
     end
   end
 end
