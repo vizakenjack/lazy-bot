@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "find"
+
 module LazyBot
   class << self
     def configure(**args)
@@ -155,15 +157,14 @@ module LazyBot
         return actions_path.each { |path| load_actions(path) }
       end
 
-      file_path = File.expand_path(actions_path)
-      files = Dir.children(file_path).select { |e| e.end_with? '.rb' }
+      Find.find(actions_path) do |file|
+        next if File.extname(file) != ".rb"
 
-      puts "WARNING: no actions found in path #{actions_path}" if files.blank?
+        load(file)
 
-      files.each do |file|
-        path = "#{file_path}/#{file}"
-        require path
-        class_name = file.split('.').first.capitalize.classify.constantize
+        basename = File.basename(file, '.rb')
+        class_name = basename.capitalize.classify.constantize
+
         puts "Added action #{class_name}"
 
         if class_name < CallbackAction

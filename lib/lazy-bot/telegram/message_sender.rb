@@ -15,12 +15,6 @@ module LazyBot
 
     def_delegators :@action_response, :text, :photo, :parse_mode, :keyboard, :inline
 
-    # delegate :text, to: :action_response
-    # delegate :photo, to: :action_response
-    # delegate :parse_mode, to: :action_response
-    # delegate :keyboard, to: :action_response
-    # delegate :inline, to: :action_response
-
     def send
       begin
         send_with_params
