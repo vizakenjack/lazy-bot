@@ -34,18 +34,18 @@ module LazyBot
 
       update_id = data["update_id"]
 
-      puts 'Received request' if LazyBot.сonfig.debug_mode
+      puts 'Received request' if LazyBot.config.debug_mode
 
       if new_request?(update_id)
         @last_update_id = update_id
         message = Telegram::Bot::Types::Update.new(data).current_message
 
         BOT.respond_message(message)
-      elsif LazyBot.сonfig.debug_mode
+      elsif LazyBot.config.debug_mode
         puts "Sinatra: skipping same request #{data}"
       end
     rescue Exception => e
-      LazyBot.сonfig.on_error(e)
+      LazyBot.config.on_error(e)
       MyLogger.sinatra.error "Sinatra error #{e}"
     ensure
       status 200

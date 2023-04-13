@@ -52,7 +52,7 @@ module LazyBot
     end
 
     def reply_to_bot?
-      respond_to?(:reply_to_message) && LazyBot.сonfig.bot_names.include?(reply_to_message.from.username)
+      respond_to?(:reply_to_message) && LazyBot.config.bot_names.include?(reply_to_message.from.username)
     rescue Exception => e
       LazyBot.config.on_error(e)
       false
