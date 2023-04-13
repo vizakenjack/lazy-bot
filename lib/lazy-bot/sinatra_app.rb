@@ -5,7 +5,8 @@ require "sinatra/cross_origin"
 
 module LazyBot
   class SinatraApp < Sinatra::Base
-    set :bind, LazyBot.config.socket_path
+    set :bind, "../../shared/tmp/chatbot.sock"
+    # set :bind, LazyBot.config.socket_path
 
     configure do
       enable :cross_origin
