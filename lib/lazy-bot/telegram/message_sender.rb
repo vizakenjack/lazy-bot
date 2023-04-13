@@ -82,10 +82,8 @@ module LazyBot
       obj = options[:action_response]
       if obj.is_a?(Hash)
         ActionResponse.new(obj)
-      elsif obj.is_a?(ActionResponse)
-        obj
       else
-        raise ArgumentError
+        obj
       end
     end
   end

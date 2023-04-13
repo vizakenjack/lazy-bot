@@ -2,6 +2,8 @@
 
 module LazyBot
   class Config
+    attr_reader :timeout, :telegram_token, :bot_names, :debug_mode, :socket_path
+
     def initialize(**args)
       @timeout = args[:timeout] || 120
       @bot_names = args[:bot_names] || []

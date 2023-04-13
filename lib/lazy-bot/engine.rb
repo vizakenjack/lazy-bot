@@ -1,16 +1,23 @@
 # frozen_string_literal: true
 
 module LazyBot
-  class Engine
-    attr_reader :config
+  class << self
+    def configure(**args)
+      @config = Config.new(**args)
+    end
 
+    attr_reader :config
+  end
+
+  class Engine
     def initialize(**args)
       @actions = []
       @callbacks = []
-      @config = Config.new(**args)
 
-      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: config.timeout + 60 }
-      client = Telegram::Bot::Client.new(config.telegram_token, opts)
+      LazyBot.configure(**args)
+
+      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: LazyBot.config.timeout + 60 }
+      client = Telegram::Bot::Client.new(LazyBot.config.telegram_token, opts)
       @bot = DecoratedBotClient.new(client)
 
       raise StandardError, 'Bot ENV is not set' unless ENV['BOT_ENV']
@@ -89,7 +96,7 @@ module LazyBot
 
     def handle_text_message(options, message)
       text = message.try(:text) || message.try(:data)
-      MyLogger.warn("Received message: #{text}", message:)
+      MyLogger.warn("Received message: #{text}")
 
       # action_response = matched_action_response(options)
       matched_action = find_matched_action(options)
@@ -144,22 +151,25 @@ module LazyBot
     end
 
     def load_actions(actions_path)
-      files = Dir[actions_path]
-      MyLogger.warn "WARNING: no actions found" if files.blank?
+      if actions_path.is_a?(Array)
+        return actions_path.each { |path| load_actions(path) }
+      end
 
-      files.each do |path|
-        scanned = path.scan(%r{/([A-Za-z_0-9]+).rb})
-        if scanned.present?
-          class_name = scanned.flatten.first.capitalize.classify.constantize
-          MyLogger.debug "Added action #{class_name}"
+      file_path = File.expand_path(actions_path)
+      files = Dir.children(file_path).select { |e| e.end_with? '.rb' }
 
-          if class_name < CallbackAction
-            @callbacks << class_name
-          else
-            @actions << class_name
-          end
+      puts "WARNING: no actions found in path #{actions_path}" if files.blank?
+
+      files.each do |file|
+        path = "#{file_path}/#{file}"
+        require path
+        class_name = file.split('.').first.capitalize.classify.constantize
+        puts "Added action #{class_name}"
+
+        if class_name < CallbackAction
+          @callbacks << class_name
         else
-          raise "Invalid scan for action: #{path}"
+          @actions << class_name
         end
       end
 

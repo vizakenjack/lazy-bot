@@ -20,14 +20,23 @@ class MyLogger
 
   def self.info(text = nil)
     if text
-      new('info.log').info(text)
+      new('bot.log').info(text)
     else
-      new('info.log')
+      new('bot.log')
+    end
+  end
+
+  def self.warn(text = nil)
+    if text
+      new('bot.log').warn(text)
+    else
+      new('bot.log')
     end
   end
 
   def self.error(text = nil)
     if text
+      puts text if DEVELOPMENT
       new('error.log').error(text)
     else
       new('error.log')
