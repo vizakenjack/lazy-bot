@@ -17,21 +17,30 @@ module LazyBot
     end
 
     # {"bitcoin" => "/select_btc", "ethereum" => "/select_eth"}
+    # keyboard = [
+    #  [ Telegram::Bot::Types::InlineKeyboardButton.new(text: '1', callback_data: 'x')],
+    #  [ Telegram::Bot::Types::InlineKeyboardButton.new(text: '2', callback_data: '3')],
+    # ]
     def get_inline_markup
       keyboard = entry_to_keyboard(data)
       keyboard = [keyboard] if data.is_a?(Hash)
-
-      # keyboard = [
-      #  [ Telegram::Bot::Types::InlineKeyboardButton.new(text: '1', callback_data: 'x')],
-      #  [ Telegram::Bot::Types::InlineKeyboardButton.new(text: '2', callback_data: '3')],
-      # ]
 
       Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: keyboard)
     end
 
     def entry_to_keyboard(entry)
       if entry.is_a?(Hash)
-        entry.map { |k, v| Telegram::Bot::Types::InlineKeyboardButton.new(text: k.to_s, callback_data: v) }
+        entry.map do |k, v|
+          args = { text: k.to_s }
+
+          if v.start_with?('http')
+            args[:url] = v
+          else
+            args[:callback_data] = v
+          end
+
+          Telegram::Bot::Types::InlineKeyboardButton.new(**args)
+        end
       elsif entry.is_a?(Array)
         entry.map { |item| entry_to_keyboard(item).flatten }
       end
