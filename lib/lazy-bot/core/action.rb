@@ -4,7 +4,7 @@ module LazyBot
   class Action
     PRIORITY = 0
 
-    attr_reader :options, :bot, :message, :text, :repo, :api, :user
+    attr_reader :options, :bot, :user_states, :message, :text, :repo, :api, :user
 
     def initialize(options)
       @options = options
@@ -14,6 +14,7 @@ module LazyBot
       @repo = options[:repo]
       @api = @repo&.api
       @user = options[:user]
+      @user_states = options[:user_states]
     end
 
     def self.from_action(action, **opts)
@@ -25,6 +26,19 @@ module LazyBot
       opts ||= {}
       opts.merge! message: action.message.message
       new(action.options.merge(opts))
+    end
+
+    def state
+      user_states[user.id] || {}
+    end
+
+    def update_state(new_state_name, new_state_value)
+      user_states[user.id] ||= {}
+      user_states[user.id][new_state_name] = new_state_value
+    end
+
+    def reset_state
+      user_states[user.id] = {}
     end
 
     def state_name
@@ -73,12 +87,6 @@ module LazyBot
       raise e if DEVELOPMENT
 
       { text: I18n.t("errors.default_error") }
-    end
-
-    def reset_user!
-      # USERS.delete(message.from.id)
-      # @user = find_or_create_user!(message)
-      # @user.reset_state
     end
   end
 end

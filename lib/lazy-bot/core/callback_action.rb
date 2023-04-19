@@ -5,8 +5,6 @@ module LazyBot
     def initialize(options)
       super
       @callback = options[:message].data
-      # TODO: remove
-      @user = options[:user]
     end
 
     def args

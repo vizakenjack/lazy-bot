@@ -15,6 +15,7 @@ module LazyBot
     def initialize(**args)
       @actions = []
       @callbacks = []
+      @user_states = {}
 
       LazyBot.configure(**args)
 
@@ -52,6 +53,7 @@ module LazyBot
 
       options = {
         bot: @bot,
+        user_states: @user_states,
         message: decorated_message,
         repo:,
         user: repo.user,
