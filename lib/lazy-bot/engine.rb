@@ -44,7 +44,7 @@ module LazyBot
     end
 
     def respond_message(message)
-      puts "message = #{message.to_h}" if DEVELOPMENT
+      puts "message = #{message.to_h}" if DEVELOPMENT || LazyBot.config.debug_mode
       decorated_message = DecoratedMessage.new(message)
 
       return false if decorated_message.unsupported?
