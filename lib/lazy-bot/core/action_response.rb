@@ -16,7 +16,7 @@ module LazyBot
       @clear_inline = args[:clear_inline]
       @edit_inline = args[:inline]
       @replace = args[:replace]
-      @opts = args[:opts] || {}
+      @opts = LazyBot.config.default_action_opts.merge(args[:opts] || {})
     end
 
     # being skipped on handle_text_message
