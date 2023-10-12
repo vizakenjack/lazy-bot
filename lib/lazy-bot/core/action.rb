@@ -4,45 +4,40 @@ module LazyBot
   class Action
     PRIORITY = 0
 
-    attr_reader :options, :bot, :user_states, :message, :text, :repo, :api, :user
+    attr_reader :bot, :message, :text, :repo, :config, :params
 
-    def initialize(options)
-      @options = options
-      @bot = options[:bot]
-      @message = options[:message]
-      @text = @message.try(:text) || @message.try(:data)
-      @repo = options[:repo]
-      @api = @repo&.api
-      @user = options[:user]
-      @user_states = options[:user_states]
+    def initialize(params)
+      raise ArgumentError, 'Bot is not set' unless params[:bot]
+      raise ArgumentError, 'Message is not set' unless params[:message]
+      raise ArgumentError, 'Config is not set' unless params[:config]
+      raise ArgumentError, 'Repo is not set' unless params[:repo]
+
+      @bot = params[:bot]
+      @message = params[:message]
+      @text = @message.content
+      @repo = params[:repo]
+      @config = params[:config]
+      # params to be used in from_action
+      @params = params
     end
+
+    delegate :api, to: :repo
+    delegate :user, to: :repo
+    alias callback text
 
     def self.from_action(action, **opts)
       opts ||= {}
-      new(action.options.merge(opts))
+      new(action.params.merge(opts))
     end
 
-    def self.from_callback(action, **opts)
-      opts ||= {}
-      opts.merge! message: action.message.message
-      new(action.options.merge(opts))
-    end
+    # def self.from_callback(action, **opts)
+    #   opts ||= {}
+    #   opts.merge! message: action.message.message
+    #   new(action.options.merge(opts))
+    # end
 
-    def state
-      user_states[user.id] || {}
-    end
-
-    def update_state(new_state_name, new_state_value)
-      user_states[user.id] ||= {}
-      user_states[user.id][new_state_name] = new_state_value
-    end
-
-    def reset_state
-      user_states[user.id] = {}
-    end
-
-    def state_name
-      ""
+    def args
+      @callback&.split
     end
 
     def start_condition
@@ -64,7 +59,7 @@ module LazyBot
     end
 
     def start
-      # @user.reset_state
+      nil
     end
 
     def ask
@@ -74,6 +69,18 @@ module LazyBot
     def redraw_inline
     end
 
+    def asdasda
+      print('asd')
+    end
+
+    def match_message?
+      true
+    end
+
+    def match_callback?
+      false
+    end
+
     def to_output
       if start_condition
         start
@@ -81,7 +88,7 @@ module LazyBot
         finish
       end
     rescue Exception => e
-      LazyBot.config.on_error(e)
+      config.on_error(e)
       MyLogger.error "message = #{e.message}"
       MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
       raise e if DEVELOPMENT

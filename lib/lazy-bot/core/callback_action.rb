@@ -2,25 +2,12 @@
 
 module LazyBot
   class CallbackAction < Action
-    def initialize(options)
-      super
-      @callback = options[:message].data
+    def match_message?
+      false
     end
 
-    def args
-      @callback&.split
-    end
-
-    def start
-    end
-
-    def finish_condition
-    end
-
-    def before_finish
-    end
-
-    def finish
+    def match_callback?
+      true
     end
   end
 end

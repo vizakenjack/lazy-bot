@@ -2,20 +2,26 @@
 
 module LazyBot
   class Config
-    attr_reader :timeout, :telegram_token, :bot_names, :debug_mode, :socket_path, :default_action_opts
+    attr_reader :bot_username, :bot_env, :bot_role, :bot_url, :timeout, :telegram_token, :debug_mode,
+                :actions_path, :repo_class
 
-    def initialize(**args)
-      @timeout = args[:timeout] || 120
-      @bot_names = args[:bot_names] || []
-      @debug_mode = args[:debug_mode]
-      @socket_path = File.expand_path(args[:socket_path] || "../../shared/tmp/chatbot.sock")
-      @telegram_token = args[:telegram_token]
-      @on_error = args[:on_error]
-      @default_action_opts = args[:default_action_opts] || {}
+    def initialize(file, repo_class:)
+      full_conf = YAML.load_file(file).deep_symbolize_keys
+      env = ENV['BOT_ENV'] || 'development'
+      conf = full_conf[env.to_sym]
+
+      @bot_username = conf[:bot_username] || raise('Username is not set')
+      @bot_env = conf[:bot_env] || 'development'
+      @bot_role = conf[:bot_role] || 'default'
+      @timeout = conf[:timeout] || 120
+      @debug_mode = conf[:debug_mode] || false
+      @telegram_token = conf[:telegram_token] || raise('Token is not set')
+      @actions_path = conf[:actions_path] || raise('Actions path is not set')
+      @repo_class = repo_class
     end
 
     def on_error(error)
-      @on_error&.call(error)
+      nil
     end
   end
 end

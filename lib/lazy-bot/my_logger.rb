@@ -43,12 +43,12 @@ class MyLogger
     end
   end
 
-  def self.important
-    new('important.log')
+  def self.important(text = nil)
+    new('important.log').tap { |log| log.info(text) if text }
   end
 
-  def self.sinatra
-    new('sinatra.log')
+  def self.sinatra(text = nil)
+    new('sinatra.log').tap { |log| log.info(text) if text }
   end
 
   def debug(message, user: nil)

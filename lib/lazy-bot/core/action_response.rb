@@ -2,21 +2,22 @@
 
 module LazyBot
   class ActionResponse
-    attr_accessor :text, :notice, :keyboard, :inline, :photo, :parse_mode, :alert, :clear_inline, :edit_inline, :replace,
+    attr_accessor :text, :notice, :keyboard, :inline, :photo, :parse_mode, :alert, :clear_inline, :edit_inline, :edit, :replace,
                   :opts
 
-    def initialize(args)
-      @text = args[:text]
-      @notice = args[:notice]
-      @keyboard = args[:keyboard] || []
-      @inline = args[:inline]
-      @photo = args[:photo]
-      @parse_mode = args[:parse_mode]
-      @alert = args[:alert]
-      @clear_inline = args[:clear_inline]
-      @edit_inline = args[:inline]
-      @replace = args[:replace]
-      @opts = LazyBot.config.default_action_opts.merge(args[:opts] || {})
+    def initialize(params)
+      @text = params[:text]
+      @notice = params[:notice]
+      @keyboard = params[:keyboard] || []
+      @inline = params[:inline]
+      @photo = params[:photo]
+      @parse_mode = params[:parse_mode]
+      @alert = params[:alert]
+      @clear_inline = params[:clear_inline]
+      @edit_inline = params[:edit_inline]
+      @replace = params[:replace]
+      @edit = params[:edit]
+      @opts = params[:opts]
     end
 
     # being skipped on handle_text_message
@@ -24,20 +25,20 @@ module LazyBot
       ActionResponse.new(text: '')
     end
 
-    def self.text(text, args = {})
-      ActionResponse.new(args.merge({ text: }))
+    def self.text(text, params = {})
+      ActionResponse.new(params.merge({ text: }))
     end
 
-    def self.notice(notice, args = {})
-      ActionResponse.new(args.merge({ notice: }))
+    def self.notice(notice, params = {})
+      ActionResponse.new(params.merge({ notice: }))
     end
 
-    def self.alert(notice, args = {})
-      ActionResponse.new(args.merge({ notice:, alert: true }))
+    def self.alert(notice, params = {})
+      ActionResponse.new(params.merge({ notice:, alert: true }))
     end
 
     def present?
-      text.present? || notice.present? || photo.present?
+      text.present? || notice.present? || photo.present? || inline.present?
     end
 
     def reply_markup

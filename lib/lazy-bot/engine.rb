@@ -3,29 +3,26 @@
 require "find"
 
 module LazyBot
-  class << self
-    def configure(**args)
-      @config = Config.new(**args)
-    end
-
-    attr_reader :config
-  end
-
   class Engine
-    def initialize(**args)
+    attr_reader :config
+
+    def initialize(config)
       @actions = []
-      @callbacks = []
-      @user_states = {}
+      # @callbacks = []
+      @config = config
 
-      LazyBot.configure(**args)
+      raise StandardError, 'Timeout is not set' unless @config.timeout
+      raise StandardError, 'Telegram token is not set' unless @config.telegram_token
+      raise StandardError, 'Actions path is not set' unless @config.actions_path
 
-      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: LazyBot.config.timeout + 60 }
-      client = Telegram::Bot::Client.new(LazyBot.config.telegram_token, opts)
+      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: config.timeout + 60 }
+      client = Telegram::Bot::Client.new(config.telegram_token, opts)
       @bot = DecoratedBotClient.new(client)
 
-      raise StandardError, 'Bot ENV is not set' unless ENV['BOT_ENV']
-      raise StandardError, 'Bot role is not set' unless ENV['BOT_ROLE']
+      load_actions(config.actions_path)
     end
+
+    delegate :telegram_username, to: :config
 
     def start!
       @bot.run do |bot|
@@ -44,19 +41,18 @@ module LazyBot
     end
 
     def respond_message(message)
-      puts "message = #{message.to_h}" if DEVELOPMENT || LazyBot.config.debug_mode
-      decorated_message = DecoratedMessage.new(message)
+      puts "message = #{message.to_h}" if DEVELOPMENT || config.debug_mode
+      decorated_message = DecoratedMessage.new(message, config)
 
       return false if decorated_message.unsupported?
 
-      repo = Repo.new.tap { |r| r.find_or_create_user(decorated_message) }
+      repo = @config.repo_class.new.tap { |r| r.find_or_create_user(decorated_message) }
 
       options = {
         bot: @bot,
-        user_states: @user_states,
         message: decorated_message,
+        config:,
         repo:,
-        user: repo.user,
       }
 
       if decorated_message.document?
@@ -65,52 +61,55 @@ module LazyBot
       elsif decorated_message.photo?
         MyLogger.important("Received photo")
         handle_photos(options, message)
-      elsif decorated_message.callback?
-        handle_callback(options, decorated_message)
-      elsif decorated_message.text_message?
-        handle_text_message(options, message)
+      elsif decorated_message.callback? || decorated_message.text_message?
+        handle_text_message(options, decorated_message)
+        # handle_callback(options, decorated_message)
+        # elsif decorated_message.text_message?
+        # handle_text_message(options, message)
       else
         handle_unknown_message(message)
       end
     end
 
-    def handle_callback(options, decorated_message)
-      matched_callback = find_matched_callback(options)
-      return unless matched_callback
+    # def handle_callback(options, decorated_message)
+    #   matched_callback = find_matched_callback(options)
+    #   return unless matched_callback
 
-      args = { bot: options[:bot], callback: decorated_message }
+    #   args = { bot: options[:bot], callback: decorated_message }
 
-      action_response = matched_callback.to_output
+    #   action_response = matched_callback.to_output
 
-      if (before_finish_action = matched_callback.before_finish)
-        args.merge!(action_response: before_finish_action)
-        CallbackResponder.new(**args).respond
-      end
+    #   if (before_finish_action = matched_callback.before_finish)
+    #     args.merge!(action_response: before_finish_action)
+    #     CallbackResponder.new(**args).send
+    #   end
 
-      if action_response
-        args.merge!({ action_response: })
-        CallbackResponder.new(**args).respond
-      end
+    #   if action_response
+    #     args.merge!({ action_response: })
+    #     CallbackResponder.new(**args).send
+    #   end
 
-      if (after_finish_action = matched_callback.after_finish)
-        args.merge!(action_response: after_finish_action)
-        CallbackResponder.new(**args).respond
-      end
-    end
+    #   if (after_finish_action = matched_callback.after_finish)
+    #     args.merge!(action_response: after_finish_action)
+    #     CallbackResponder.new(**args).send
+    #   end
+    # end
 
     def handle_text_message(options, message)
       text = message.try(:text) || message.try(:data)
       MyLogger.warn("Received message: #{text}")
 
       # action_response = matched_action_response(options)
-      matched_action = find_matched_action(options)
+      matched_action = find_matched_action(options, message)
       return unless matched_action
 
-      args = { bot: options[:bot],  chat: message.chat }
+      chat = message.callback? ? message.message.chat : message.chat
+      responder = message.callback? ? CallbackResponder : MessageSender
+      args = { bot: options[:bot],  chat:, message: }
 
       if (before_finish_action = matched_action.before_finish)
         args.merge!(action_response: before_finish_action)
-        MessageSender.new(**args).send
+        responder.new(**args).send
       end
 
       action_response = matched_action.to_output
@@ -118,16 +117,17 @@ module LazyBot
       # if action_response is ActionResponse.empty its being skipped
       if action_response.present?
         args.merge!(action_response:)
-        MessageSender.new(**args).send
+        binding.pry if DEVELOPMENT
+        responder.new(**args).send
       elsif action_response.nil?
         action_response = ActionResponse.text(I18n.t("errors.unknown_command"))
         args.merge!({ action_response: })
-        MessageSender.new(**args).send
+        responder.new(**args).send
       end
 
       if (after_finish_action = matched_action.after_finish)
         args.merge!(action_response: after_finish_action)
-        MessageSender.new(**args).send
+        responder.new(**args).send
       end
     end
 
@@ -160,31 +160,41 @@ module LazyBot
       end
 
       Find.find(actions_path) do |file|
-        next if File.extname(file) != ".rb"
+        next if file == actions_path
+
+        extname = File.extname(file)
+        next if extname != ".rb"
 
         load(file)
 
         basename = File.basename(file, '.rb')
-        class_name = basename.capitalize.classify.constantize
+        module_name = file.split('/')[1].capitalize.classify
+        class_name = basename.capitalize.classify
+        class_object = "#{module_name}::#{class_name}".constantize
 
-        puts "Added action #{class_name}"
+        puts "Added action #{class_object}"
 
-        if class_name < CallbackAction
-          @callbacks << class_name
-        else
-          @actions << class_name
-        end
+        @actions << class_object
+
+        # if class_object < CallbackAction
+        #   @callbacks << class_object
+        # else
+        #   @actions << class_object
+        # end
       end
 
       @actions.sort_by! { |e| -e::PRIORITY }
     end
 
-    def find_matched_action(options)
+    def find_matched_action(options, message)
       start_actions = []
       finish_actions = []
 
       @actions.each do |action_class|
         action = action_class.new(options)
+
+        next if !action.match_message? && message.callback? == false
+        next if !action.match_callback? && message.callback?
 
         if action.start_condition
           start_actions << action
@@ -201,17 +211,17 @@ module LazyBot
       end
     end
 
-    def find_matched_callback(options)
-      @callbacks.each do |action_class|
-        action = action_class.new(options)
-        if action.start_condition || action.finish_condition
-          return action
-        end
-      end
+    # def find_matched_callback(options)
+    #   @callbacks.each do |action_class|
+    #     action = action_class.new(options)
+    #     if action.start_condition || action.finish_condition
+    #       return action
+    #     end
+    #   end
 
-      MyLogger.error("Got no response for callback #{options}")
+    #   MyLogger.error("Got no response for callback #{options}")
 
-      nil
-    end
+    #   nil
+    # end
   end
 end

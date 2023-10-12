@@ -4,9 +4,12 @@ require 'delegate'
 
 module LazyBot
   class DecoratedMessage < SimpleDelegator
-    extend Forwardable
-    def_delegator :__getobj__, :is_a?
-    # delegate :is_a?, to: :__getobj__
+    delegate :is_a?, to: :__getobj__
+
+    def initialize(obj, config)
+      @config = config
+      super(obj)
+    end
 
     def args(i)
       return nil if content.blank?
@@ -51,10 +54,13 @@ module LazyBot
       respond_to?(:photo) && photo.present?
     end
 
+    def forward?
+      (respond_to?(:forward_from) && forward_from.present?) ||
+        (respond_to?(:forward_sender_name) && forward_sender_name.present?)
+    end
+
     def reply_to_bot?
-      respond_to?(:reply_to_message) && LazyBot.config.bot_names.include?(reply_to_message.from.username)
-    rescue Exception => e
-      LazyBot.config.on_error(e)
+      respond_to?(:reply_to_message) && @config.bot_username == reply_to_message.from.username
       false
     end
 
@@ -74,6 +80,7 @@ module LazyBot
     end
 
     def unsupported?
+      return true if is_a?(Telegram::Bot::Types::ChatMemberUpdated)
       return true if in_group? && mention? == false
       return true if in_channel?
 
@@ -83,7 +90,7 @@ module LazyBot
     def mention?
       return false if text.blank?
 
-      LazyBot.config.bot_names.any? { |name| text.downcase.start_with?("@#{name.downcase}") }
+      text.downcase.start_with?("@#{@config.bot_username.downcase}")
     end
   end
 end
