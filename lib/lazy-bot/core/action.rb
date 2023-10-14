@@ -36,10 +36,6 @@ module LazyBot
     #   new(action.options.merge(opts))
     # end
 
-    def args
-      @callback&.split
-    end
-
     def start_condition
       nil
     end
@@ -67,10 +63,6 @@ module LazyBot
     end
 
     def redraw_inline
-    end
-
-    def asdasda
-      print('asd')
     end
 
     def match_message?

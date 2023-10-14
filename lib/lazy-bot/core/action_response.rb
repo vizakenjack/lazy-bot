@@ -37,6 +37,14 @@ module LazyBot
       ActionResponse.new(params.merge({ notice:, alert: true }))
     end
 
+    def self.markdown(text, params = {})
+      params[:text] = text
+      params[:opts] ||= {}
+      params[:opts][:parse_mode] = 'Markdown'
+      params[:opts][:disable_web_page_preview] = true
+      ActionResponse.new(params)
+    end
+
     def present?
       text.present? || notice.present? || photo.present? || inline.present?
     end

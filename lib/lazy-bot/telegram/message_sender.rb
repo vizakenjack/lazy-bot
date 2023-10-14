@@ -31,11 +31,13 @@ module LazyBot
       begin
         args = {
           chat_id:,
-          reply_markup: action_response.reply_markup,
           message_id: message.message_id,
           parse_mode:,
           text:,
         }
+        if action_response.inline
+          args[:reply_markup] = action_response.reply_markup
+        end
 
         args.merge!(action_response.opts) if action_response.opts.present?
 
@@ -77,13 +79,8 @@ module LazyBot
     end
 
     def send_text(args)
-      if text.length >= 8000
-        bot.api.send_message(**args.merge(text: text[0...4000]))
-        bot.api.send_message(**args.merge(text: text[4000..8000]))
-        bot.api.send_message(**args.merge(text: text[8000..]))
-      elsif text.length >= 4000
-        bot.api.send_message(**args.merge(text: text[0...4000]))
-        bot.api.send_message(**args.merge(text: text[4000..]))
+      if text.length >= 4000
+        send_in_chunks(args)
       else
         bot.api.send_message(**args)
       end
@@ -96,6 +93,12 @@ module LazyBot
         send_text(**args.merge(parse_mode: nil))
         MyLogger.warn "User received error in text: #{args[:text]}"
         MyLogger.important "User received error in text: #{args[:text]}"
+      end
+    end
+
+    def send_in_chunks(args, chunk_size = 4000)
+      text.chars.each_slice(chunk_size) do |chunk|
+        bot.api.send_message(**args.merge(text: chunk.join))
       end
     end
 

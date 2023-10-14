@@ -14,6 +14,13 @@ module LazyBot
       false
     end
 
+    def safe_delete_message(chat_id:, message_id:)
+      api.delete_message(chat_id:, message_id:)
+    rescue StandardError
+      puts("Cant delete message with id: #{message_id}")
+      nil
+    end
+
     # def menu_button(text)
     #   Telegram::Bot::Types::MenuButtonCommands.new(type: text)
     # end

@@ -8,16 +8,12 @@ module LazyBot
 
     def initialize(config)
       @actions = []
-      # @callbacks = []
       @config = config
 
-      raise StandardError, 'Timeout is not set' unless @config.timeout
-      raise StandardError, 'Telegram token is not set' unless @config.telegram_token
-      raise StandardError, 'Actions path is not set' unless @config.actions_path
-
-      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: config.timeout + 60 }
+      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: 360 }
       client = Telegram::Bot::Client.new(config.telegram_token, opts)
       @bot = DecoratedBotClient.new(client)
+      @last_update_id = 0
 
       load_actions(config.actions_path)
     end
@@ -29,24 +25,41 @@ module LazyBot
         bot.listen do |message|
           respond_message(message)
         rescue Telegram::Bot::Exceptions::ResponseError => e
+          raise e if DEVELOPMENT
+
           puts "Got telegram response error: #{e}"
-        rescue Exception => e
-          if e.message != "SIGTERM" && e.message != "exit"
-            MyLogger.error "message = #{e.message}"
-            MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
-          end
+        rescue StandardError => e
+          MyLogger.error "message = #{e.message}"
+          MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
           raise if DEVELOPMENT
         end
       end
     end
 
+    def process_webhook_request(params)
+      update_id = params["update_id"]
+
+      return unless new_request?(update_id)
+
+      @last_update_id = update_id
+
+      message = Telegram::Bot::Types::Update.new(params).current_message
+      respond_message(message)
+    end
+
+    def new_request?(update_id)
+      return true if update_id.nil? || update_id == 0
+
+      update_id > @last_update_id
+    end
+
     def respond_message(message)
-      puts "message = #{message.to_h}" if DEVELOPMENT || config.debug_mode
+      puts "message = #{message.to_h}" if DEVELOPMENT
       decorated_message = DecoratedMessage.new(message, config)
 
       return false if decorated_message.unsupported?
 
-      repo = @config.repo_class.new.tap { |r| r.find_or_create_user(decorated_message) }
+      repo = @config.repo_class.new(config:).tap { |r| r.find_or_create_user(decorated_message) }
 
       options = {
         bot: @bot,
@@ -71,30 +84,6 @@ module LazyBot
       end
     end
 
-    # def handle_callback(options, decorated_message)
-    #   matched_callback = find_matched_callback(options)
-    #   return unless matched_callback
-
-    #   args = { bot: options[:bot], callback: decorated_message }
-
-    #   action_response = matched_callback.to_output
-
-    #   if (before_finish_action = matched_callback.before_finish)
-    #     args.merge!(action_response: before_finish_action)
-    #     CallbackResponder.new(**args).send
-    #   end
-
-    #   if action_response
-    #     args.merge!({ action_response: })
-    #     CallbackResponder.new(**args).send
-    #   end
-
-    #   if (after_finish_action = matched_callback.after_finish)
-    #     args.merge!(action_response: after_finish_action)
-    #     CallbackResponder.new(**args).send
-    #   end
-    # end
-
     def handle_text_message(options, message)
       text = message.try(:text) || message.try(:data)
       MyLogger.warn("Received message: #{text}")
@@ -105,7 +94,7 @@ module LazyBot
 
       chat = message.callback? ? message.message.chat : message.chat
       responder = message.callback? ? CallbackResponder : MessageSender
-      args = { bot: options[:bot],  chat:, message: }
+      args = { bot: options[:bot], chat:, message: }
 
       if (before_finish_action = matched_action.before_finish)
         args.merge!(action_response: before_finish_action)
@@ -117,7 +106,6 @@ module LazyBot
       # if action_response is ActionResponse.empty its being skipped
       if action_response.present?
         args.merge!(action_response:)
-        binding.pry if DEVELOPMENT
         responder.new(**args).send
       elsif action_response.nil?
         action_response = ActionResponse.text(I18n.t("errors.unknown_command"))
@@ -155,11 +143,12 @@ module LazyBot
     end
 
     def load_actions(actions_path)
-      if actions_path.is_a?(Array)
-        return actions_path.each { |path| load_actions(path) }
-      end
+      # if actions_path.is_a?(Array)
+      #   return actions_path.each { |path| load_actions(path) }
+      # end
 
       Find.find(actions_path) do |file|
+        next if File.directory?(file)
         next if file == actions_path
 
         extname = File.extname(file)

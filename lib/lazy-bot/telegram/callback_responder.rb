@@ -21,13 +21,12 @@ module LazyBot
       if text
         if action_response.edit
           edit_message
+          return
         else
           answer_with_message
         end
       elsif notice
         answer_with_notice notice
-      elsif DEVELOPMENT
-        MyLogger.error "Cant answer callback #{callback}"
       end
 
       if action_response.inline && action_response.text.blank?
@@ -47,6 +46,8 @@ module LazyBot
 
     def answer_with_notice(notice)
       @bot.api.answer_callback_query(callback_query_id: callback.id, text: notice, show_alert: action_response.alert)
+    rescue Telegram::Bot::Exceptions::ResponseError
+      MyLogger.error "Cant answer callback query"
     end
 
     def answer_with_message
@@ -59,8 +60,7 @@ module LazyBot
       MessageSender.new(**args).send
 
       @bot.api.answer_callback_query(callback_query_id: callback.id)
-    rescue StandardError => e
-      raise e
+    rescue Telegram::Bot::Exceptions::ResponseError
       MyLogger.error "Cant answer callback query"
     end
 
@@ -76,7 +76,6 @@ module LazyBot
 
       @bot.api.answer_callback_query(callback_query_id: callback.id)
     rescue StandardError => e
-      raise e
       MyLogger.error "Cant answer callback query"
     end
 

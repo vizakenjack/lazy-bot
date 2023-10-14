@@ -12,14 +12,15 @@ module LazyBot
     end
 
     def args(i)
+      return @args[i] if defined?(@args)
       return nil if content.blank?
 
-      begin
-        content.split[i]
-      rescue StandardError => e
-        MyLogger.error("Splitting #{content} - Got error #{e.inspect}")
-        nil
-      end
+      @args = content.split
+      @args[i]
+    end
+
+    def message_chat
+      callback? ? message.chat : chat
     end
 
     def content
@@ -65,6 +66,8 @@ module LazyBot
     end
 
     def reply_date
+      return nil unless respond_to?(:reply_to_message)
+
       reply_to_message&.date
     end
 
@@ -88,6 +91,7 @@ module LazyBot
     end
 
     def mention?
+      return false unless text_message?
       return false if text.blank?
 
       text.downcase.start_with?("@#{@config.bot_username.downcase}")
