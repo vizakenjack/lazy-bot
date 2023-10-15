@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require "find"
-
 module LazyBot
   class Engine
     attr_reader :config
@@ -76,9 +74,6 @@ module LazyBot
         handle_photos(options, message)
       elsif decorated_message.callback? || decorated_message.text_message?
         handle_text_message(options, decorated_message)
-        # handle_callback(options, decorated_message)
-        # elsif decorated_message.text_message?
-        # handle_text_message(options, message)
       else
         handle_unknown_message(message)
       end
@@ -147,7 +142,7 @@ module LazyBot
       #   return actions_path.each { |path| load_actions(path) }
       # end
 
-      Find.find(actions_path) do |file|
+      find_files(actions_path) do |file|
         next if File.directory?(file)
         next if file == actions_path
 
@@ -175,6 +170,8 @@ module LazyBot
       @actions.sort_by! { |e| -e::PRIORITY }
     end
 
+    private
+
     def find_matched_action(options, message)
       start_actions = []
       finish_actions = []
@@ -200,17 +197,45 @@ module LazyBot
       end
     end
 
-    # def find_matched_callback(options)
-    #   @callbacks.each do |action_class|
-    #     action = action_class.new(options)
-    #     if action.start_condition || action.finish_condition
-    #       return action
-    #     end
-    #   end
+    def find_files(*paths, ignore_error: true) # :yield: path
+      block_given? or return enum_for(__method__, *paths, ignore_error:)
 
-    #   MyLogger.error("Got no response for callback #{options}")
+      fs_encoding = Encoding.find("filesystem")
 
-    #   nil
-    # end
+      paths.collect! do |d|
+        raise Errno::ENOENT, d unless File.exist?(d)
+
+        d.dup
+      end.each do |path|
+        path = path.to_path if path.respond_to? :to_path
+        enc = path.encoding == Encoding::US_ASCII ? fs_encoding : path.encoding
+        ps = [path]
+        while file = ps.shift
+          yield file.dup
+          begin
+            s = File.lstat(file)
+          rescue Errno::ENOENT, Errno::EACCES, Errno::ENOTDIR, Errno::ELOOP, Errno::ENAMETOOLONG, Errno::EINVAL
+            raise unless ignore_error
+
+            next
+          end
+          next unless s.directory?
+
+          begin
+            fs = Dir.children(file, encoding: enc)
+          rescue Errno::ENOENT, Errno::EACCES, Errno::ENOTDIR, Errno::ELOOP, Errno::ENAMETOOLONG, Errno::EINVAL
+            raise unless ignore_error
+
+            next
+          end
+          fs.sort!
+          fs.reverse_each do |f|
+            f = File.join(file, f)
+            ps.unshift f
+          end
+        end
+      end
+      nil
+    end
   end
 end

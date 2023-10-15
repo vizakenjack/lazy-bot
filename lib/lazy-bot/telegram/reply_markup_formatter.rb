@@ -8,7 +8,7 @@ module LazyBot
       @data = data
     end
 
-    def get_markup
+    def build_markup
       if data.blank?
         Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
       else
@@ -21,7 +21,7 @@ module LazyBot
     #  [ Telegram::Bot::Types::InlineKeyboardButton.new(text: '1', callback_data: 'x')],
     #  [ Telegram::Bot::Types::InlineKeyboardButton.new(text: '2', callback_data: '3')],
     # ]
-    def get_inline_markup
+    def build_inline_markup
       keyboard = entry_to_keyboard(data)
       keyboard = [keyboard] if data.is_a?(Hash)
 

@@ -5,7 +5,7 @@ module LazyBot
     attr_reader :conf, :bot_username, :bot_env, :telegram_token, :actions_path, :repo_class
 
     def initialize(file, repo_class:)
-      full_conf = YAML.load_file(file).deep_symbolize_keys
+      full_conf = YAML.load_file(file, aliases: true).deep_symbolize_keys
       env = ENV['BOT_ENV'] || 'development'
       @conf = full_conf[env.to_sym]
 

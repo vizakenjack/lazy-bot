@@ -51,9 +51,9 @@ module LazyBot
 
     def reply_markup
       if inline
-        ReplyMarkupFormatter.new(inline).get_inline_markup
+        ReplyMarkupFormatter.new(inline).build_inline_markup
       elsif keyboard
-        ReplyMarkupFormatter.new(keyboard).get_markup
+        ReplyMarkupFormatter.new(keyboard).build_markup
       end
     end
   end
