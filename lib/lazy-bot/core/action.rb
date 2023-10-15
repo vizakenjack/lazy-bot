@@ -22,7 +22,7 @@ module LazyBot
       @params = params
     end
 
-    def_delegators :@action_response, :api, :user
+    def_delegators :@repo, :api, :user
 
     alias callback text
 
