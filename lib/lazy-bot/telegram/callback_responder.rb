@@ -2,6 +2,8 @@
 
 module LazyBot
   class CallbackResponder
+    extend Forwardable
+
     attr_reader :callback, :message, :chat, :bot, :action_response
 
     def initialize(params)
@@ -12,8 +14,7 @@ module LazyBot
       @chat = @message.chat
     end
 
-    delegate :text, to: :action_response
-    delegate :notice, to: :action_response
+    def_delegators :@action_response, :text, :notice
 
     def send
       delete_previous_message if action_response.replace

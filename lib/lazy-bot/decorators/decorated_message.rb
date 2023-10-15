@@ -1,14 +1,15 @@
 # frozen_string_literal: true
 
-require 'delegate'
-
 module LazyBot
   class DecoratedMessage < SimpleDelegator
-    delegate :is_a?, to: :__getobj__
-
+    
     def initialize(obj, config)
       @config = config
       super(obj)
+    end
+
+    def is_a?(target)
+      __getobj__.is_a?(target)
     end
 
     def args(i)

@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'delegate'
-
 module LazyBot
   class DecoratedBotClient < SimpleDelegator
     def on_channel?(channel_id:, user_id:)
@@ -20,9 +18,5 @@ module LazyBot
       puts("Cant delete message with id: #{message_id}")
       nil
     end
-
-    # def menu_button(text)
-    #   Telegram::Bot::Types::MenuButtonCommands.new(type: text)
-    # end
   end
 end

@@ -2,6 +2,7 @@
 
 module LazyBot
   class Action
+    extend Forwardable
     PRIORITY = 0
 
     attr_reader :bot, :message, :text, :repo, :config, :params
@@ -21,8 +22,8 @@ module LazyBot
       @params = params
     end
 
-    delegate :api, to: :repo
-    delegate :user, to: :repo
+    def_delegators :@action_response, :api, :user
+
     alias callback text
 
     def self.from_action(action, **opts)

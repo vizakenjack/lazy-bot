@@ -2,6 +2,8 @@
 
 module LazyBot
   class Engine
+    extend Forwardable
+
     attr_reader :config
 
     def initialize(config)
@@ -16,7 +18,7 @@ module LazyBot
       load_actions(config.actions_path)
     end
 
-    delegate :telegram_username, to: :config
+    def_delegators :@config, :telegram_username
 
     def start!
       @bot.run do |bot|

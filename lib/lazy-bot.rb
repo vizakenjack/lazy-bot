@@ -5,6 +5,7 @@ DEVELOPMENT = ENV["BOT_ENV"] != "production"
 require "telegram/bot"
 require "logger"
 require 'forwardable'
+require 'delegate'
 
 require "lazy-bot/my_logger"
 require "lazy-bot/decorators/decorated_bot_client"
