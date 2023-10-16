@@ -1,3 +1,4 @@
+# rubocop:disable Style/ClassVars
 # frozen_string_literal: true
 
 module LazyBot
@@ -7,6 +8,8 @@ module LazyBot
     attr_reader :config
 
     def initialize(config)
+      @@loaded_actions = []
+
       @actions = []
       @config = config
 
@@ -140,9 +143,7 @@ module LazyBot
     end
 
     def load_actions(actions_path)
-      # if actions_path.is_a?(Array)
-      #   return actions_path.each { |path| load_actions(path) }
-      # end
+      return if @@loaded_actions.include?(actions_path)
 
       find_files(actions_path) do |file|
         next if File.directory?(file)
@@ -151,23 +152,20 @@ module LazyBot
         extname = File.extname(file)
         next if extname != ".rb"
 
-        load(file)
-
         basename = File.basename(file, '.rb')
         module_name = file.split('/')[1].capitalize.classify
         class_name = basename.capitalize.classify
+
+        file_path = "#{Dir.pwd}/#{file}"
+        require(file_path)
         class_object = "#{module_name}::#{class_name}".constantize
 
         puts "Added action #{class_object}"
 
         @actions << class_object
-
-        # if class_object < CallbackAction
-        #   @callbacks << class_object
-        # else
-        #   @actions << class_object
-        # end
       end
+
+      @@loaded_actions << actions_path
 
       @actions.sort_by! { |e| -e::PRIORITY }
     end
@@ -241,3 +239,5 @@ module LazyBot
     end
   end
 end
+
+# rubocop:enable Style/ClassVars
