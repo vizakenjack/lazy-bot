@@ -31,12 +31,6 @@ module LazyBot
       new(action.params.merge(opts))
     end
 
-    # def self.from_callback(action, **opts)
-    #   opts ||= {}
-    #   opts.merge! message: action.message.message
-    #   new(action.options.merge(opts))
-    # end
-
     def start_condition
       nil
     end
@@ -60,7 +54,7 @@ module LazyBot
     end
 
     def ask
-      { text: I18n.t(state_name) }
+      nil
     end
 
     def redraw_inline
@@ -80,13 +74,13 @@ module LazyBot
       elsif finish_condition
         finish
       end
-    rescue Exception => e
+    rescue StandardError => e
       config.on_error(e)
       MyLogger.error "message = #{e.message}"
       MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
       raise e if DEVELOPMENT
 
-      { text: I18n.t("errors.default_error") }
+      ActionResponse.text(config.error_message)
     end
   end
 end

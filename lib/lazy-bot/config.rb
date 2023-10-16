@@ -18,5 +18,9 @@ module LazyBot
     def on_error(error)
       nil
     end
+
+    def error_message
+      "Error"
+    end
   end
 end
