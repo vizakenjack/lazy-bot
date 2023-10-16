@@ -5,7 +5,7 @@ module LazyBot
     extend Forwardable
     PRIORITY = 0
 
-    attr_reader :bot, :message, :text, :repo, :config, :params
+    attr_reader :bot, :text, :message, :repo, :config, :params
 
     def initialize(params)
       raise ArgumentError, 'Bot is not set' unless params[:bot]
@@ -15,9 +15,9 @@ module LazyBot
 
       @bot = params[:bot]
       @message = params[:message]
-      @text = @message.content
       @repo = params[:repo]
       @config = params[:config]
+      @text = @message.text
       # params to be used in from_action
       @params = params
     end
