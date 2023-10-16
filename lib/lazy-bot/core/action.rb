@@ -17,7 +17,7 @@ module LazyBot
       @message = params[:message]
       @repo = params[:repo]
       @config = params[:config]
-      @text = @message.text
+      @text = @message.content
       # params to be used in from_action
       @params = params
     end
