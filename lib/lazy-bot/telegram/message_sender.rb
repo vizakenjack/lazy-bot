@@ -92,7 +92,6 @@ module LazyBot
       if e.message.include?('can\'t parse entities')
         send_text(**args.merge(parse_mode: nil))
         MyLogger.warn "User received error in text: #{args[:text]}"
-        MyLogger.important "User received error in text: #{args[:text]}"
       end
     end
 

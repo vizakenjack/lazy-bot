@@ -72,10 +72,10 @@ module LazyBot
       }
 
       if decorated_message.document?
-        MyLogger.important("Received document")
+        MyLogger.info("Received document")
         handle_document(options, message)
       elsif decorated_message.photo?
-        MyLogger.important("Received photo")
+        MyLogger.info("Received photo")
         handle_photos(options, message)
       elsif decorated_message.callback? || decorated_message.text_message?
         handle_text_message(options, decorated_message)

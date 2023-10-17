@@ -78,7 +78,6 @@ module LazyBot
       config.on_error(e)
       MyLogger.error "message = #{e.message}"
       MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
-      raise e if DEVELOPMENT
 
       ActionResponse.text(config.error_message)
     end
