@@ -13,7 +13,7 @@ module LazyBot
       @actions = []
       @config = config
 
-      opts = DEVELOPMENT ? { timeout: 1 } : { timeout: 360 }
+      opts = ENV['BOT_ENV'] == 'development' ? { timeout: 1 } : { timeout: 360 }
       client = Telegram::Bot::Client.new(config.telegram_token, opts)
       @bot = DecoratedBotClient.new(client)
       @last_update_id = 0
@@ -28,13 +28,13 @@ module LazyBot
         bot.listen do |message|
           respond_message(message)
         rescue Telegram::Bot::Exceptions::ResponseError => e
-          raise e if DEVELOPMENT
+          raise e if ENV['BOT_ENV'] == 'development'
 
           puts "Got telegram response error: #{e}"
         rescue StandardError => e
           MyLogger.error "message = #{e.message}"
           MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
-          raise if DEVELOPMENT
+          raise if ENV['BOT_ENV'] == 'development'
         end
       end
     end
@@ -57,7 +57,7 @@ module LazyBot
     end
 
     def respond_message(message)
-      puts "message = #{message.to_h}" if DEVELOPMENT
+      puts "message = #{message.to_h}" if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
       decorated_message = DecoratedMessage.new(message, config)
 
       return false if decorated_message.unsupported?

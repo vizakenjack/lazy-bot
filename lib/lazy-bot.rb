@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-DEVELOPMENT = ENV["BOT_ENV"] != "production"
-
 require "telegram/bot"
 require "logger"
 require 'forwardable'

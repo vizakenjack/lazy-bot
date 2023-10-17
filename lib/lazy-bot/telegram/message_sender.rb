@@ -87,7 +87,7 @@ module LazyBot
     rescue StandardError => e
       MyLogger.error "send_text error, length is #{text.length}. Error: #{e.message}"
 
-      raise e if DEVELOPMENT
+      raise e if ENV['BOT_ENV'] == 'development'
 
       if e.message.include?('can\'t parse entities')
         send_text(**args.merge(parse_mode: nil))
