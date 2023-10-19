@@ -29,6 +29,8 @@ module LazyBot
         text
       elsif respond_to?(:data)
         data
+      elsif respond_to?(:document)
+        document
       end
     end
 

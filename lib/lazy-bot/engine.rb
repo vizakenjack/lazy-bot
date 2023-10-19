@@ -71,20 +71,17 @@ module LazyBot
         repo:,
       }
 
-      if decorated_message.document?
-        MyLogger.info("Received document")
-        handle_document(options, message)
-      elsif decorated_message.photo?
+      if decorated_message.photo?
         MyLogger.info("Received photo")
         handle_photos(options, message)
-      elsif decorated_message.callback? || decorated_message.text_message?
-        handle_text_message(options, decorated_message)
+      elsif decorated_message.callback? || decorated_message.text_message? || decorated_message.document?
+        handle_message(options, decorated_message)
       else
         handle_unknown_message(message)
       end
     end
 
-    def handle_text_message(options, message)
+    def handle_message(options, message)
       text = message.try(:text) || message.try(:data)
       MyLogger.warn("Received message: #{text}")
 
@@ -179,8 +176,12 @@ module LazyBot
       @actions.each do |action_class|
         action = action_class.new(options)
 
-        next if !action.match_message? && message.callback? == false
-        next if !action.match_callback? && message.callback?
+        result = false
+        result ||= action.match_message? && message.text_message?
+        result ||= action.match_document? && message.document?
+        result ||= action.match_callback? && message.callback?
+
+        next unless result
 
         if action.start_condition
           start_actions << action

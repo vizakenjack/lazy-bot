@@ -68,6 +68,10 @@ module LazyBot
       false
     end
 
+    def match_document?
+      false
+    end
+
     def to_output
       if start_condition
         start
