@@ -21,7 +21,7 @@ module LazyBot
       load_actions(config.actions_path)
     end
 
-    def_delegators :@config, :telegram_username
+    def_delegators :@config, :bot_username
 
     def start!
       @bot.run do |bot|

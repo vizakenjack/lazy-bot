@@ -2,15 +2,12 @@
 
 module LazyBot
   class DecoratedMessage < SimpleDelegator
-    
     def initialize(obj, config)
       @config = config
       super(obj)
     end
 
-    def is_a?(target)
-      __getobj__.is_a?(target)
-    end
+    delegate :is_a?, to: :__getobj__
 
     def args(i)
       return @args[i] if defined?(@args)
