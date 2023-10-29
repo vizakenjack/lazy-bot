@@ -74,7 +74,7 @@ module LazyBot
       if decorated_message.photo?
         MyLogger.info("Received photo")
         handle_photos(options, message)
-      elsif decorated_message.callback? || decorated_message.text_message? || decorated_message.document?
+      elsif decorated_message.callback? || decorated_message.text_message? || decorated_message.document? || decorated_message.voice?
         handle_message(options, decorated_message)
       else
         handle_unknown_message(message)
@@ -116,19 +116,10 @@ module LazyBot
       end
     end
 
-    def handle_document(options, message)
-      args = { bot: options[:bot], chat: message.chat }
-
-      action_response = ActionResponse.text("К сожалению, бот пока не умеет открывать документы")
-      args.merge!({ action_response: })
-
-      MessageSender.new(**args).send
-    end
-
     def handle_photos(options, message)
       args = { bot: options[:bot], chat: message.chat }
 
-      action_response = ActionResponse.text("К сожалению, бот пока не умеет распознавать фото")
+      action_response = ActionResponse.text("Бот пока не умеет распознавать фото — эта возможность появится, когда откроют доступ для разработчиков")
       args.merge!({ action_response: })
 
       MessageSender.new(**args).send
@@ -180,6 +171,7 @@ module LazyBot
         result ||= action.match_message? && message.text_message?
         result ||= action.match_document? && message.document?
         result ||= action.match_callback? && message.callback?
+        result ||= action.match_voice? && message.voice?
 
         next unless result
 

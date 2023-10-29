@@ -72,6 +72,10 @@ module LazyBot
       false
     end
 
+    def match_voice?
+      false
+    end
+
     def to_output
       if start_condition
         start

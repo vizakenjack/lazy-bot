@@ -21,13 +21,12 @@ module LazyBot
       callback? ? message.chat : chat
     end
 
+    # only for callback and text
     def content
       if respond_to?(:text)
         text
       elsif respond_to?(:data)
         data
-      elsif respond_to?(:document)
-        document
       end
     end
 
@@ -53,6 +52,10 @@ module LazyBot
 
     def photo?
       respond_to?(:photo) && photo.present?
+    end
+
+    def voice?
+      respond_to?(:voice) && voice.present?
     end
 
     def forward?
