@@ -74,17 +74,6 @@ module LazyBot
       reply_to_message&.date
     end
 
-    def to_params(params = {})
-      params ||= {}
-
-      params.merge!({ telegram_id: from.id, name: from.first_name })
-
-      params.tap do |p|
-        p[:telegram_username] = from.username if from.username
-        p[:bot] = ENV['BOT_ROLE']
-      end
-    end
-
     def unsupported?
       return true if is_a?(Telegram::Bot::Types::ChatMemberUpdated)
       return true if in_group? && mention? == false

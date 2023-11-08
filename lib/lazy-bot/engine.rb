@@ -72,7 +72,6 @@ module LazyBot
       }
 
       if decorated_message.photo?
-        MyLogger.info("Received photo")
         handle_photos(options, message)
       elsif decorated_message.callback? || decorated_message.text_message? || decorated_message.document? || decorated_message.voice?
         handle_message(options, decorated_message)

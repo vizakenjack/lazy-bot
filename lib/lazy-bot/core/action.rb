@@ -76,6 +76,10 @@ module LazyBot
       false
     end
 
+    def user_state
+      user.opts.dig('state', config.chat_id.to_s) || ''
+    end
+
     def to_output
       if start_condition
         start

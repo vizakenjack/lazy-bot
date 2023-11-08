@@ -85,10 +85,6 @@ module LazyBot
         bot.api.send_message(**args)
       end
     rescue StandardError => e
-      MyLogger.error "send_text error, length is #{text.length}. Error: #{e.message}"
-
-      raise e if ENV['BOT_ENV'] == 'development'
-
       if e.message.include?('can\'t parse entities')
         send_text(**args.merge(parse_mode: nil))
         MyLogger.warn "User received error in text: #{args[:text]}"

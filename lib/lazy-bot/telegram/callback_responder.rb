@@ -86,7 +86,10 @@ module LazyBot
         message_id: message.message_id,
         reply_markup: Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: []),
       }
+
       bot.api.edit_message_reply_markup(**args)
+    rescue StandardError => e
+      MyLogger.error "Cant answer callback query"
     end
 
     def edit_inline_markup
