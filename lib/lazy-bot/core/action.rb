@@ -64,6 +64,10 @@ module LazyBot
       true
     end
 
+    def match_photo?
+      false
+    end
+
     def match_callback?
       false
     end

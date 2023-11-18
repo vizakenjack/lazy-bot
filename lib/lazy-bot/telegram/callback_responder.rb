@@ -99,6 +99,8 @@ module LazyBot
         reply_markup: action_response.reply_markup,
       }
       bot.api.edit_message_reply_markup(**args)
+    rescue StandardError => e
+      MyLogger.error "Cant answer callback query"
     end
   end
 end
