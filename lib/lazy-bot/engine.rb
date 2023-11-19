@@ -62,7 +62,7 @@ module LazyBot
 
       return false if decorated_message.unsupported?
 
-      repo = @config.repo_class.new(config:).tap { |r| r.find_or_create_user(decorated_message) }
+      repo = @config.repo_class.new(config:, bot: @bot).tap { |r| r.find_or_create_user(decorated_message) }
 
       options = {
         bot: @bot,
