@@ -80,6 +80,10 @@ module LazyBot
       false
     end
 
+    def match_group?
+      mention?
+    end
+
     def user_state
       user.opts.dig('state', config.chat_id.to_s) || ''
     end

@@ -76,7 +76,6 @@ module LazyBot
 
     def unsupported?
       return true if is_a?(Telegram::Bot::Types::ChatMemberUpdated)
-      return true if in_group? && mention? == false
       return true if in_channel?
 
       false

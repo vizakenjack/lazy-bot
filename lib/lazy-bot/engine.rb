@@ -165,11 +165,12 @@ module LazyBot
         action = action_class.new(options)
 
         result = false
-        result ||= action.match_message? && message.text_message?
-        result ||= action.match_document? && message.document?
-        result ||= action.match_callback? && message.callback?
-        result ||= action.match_voice? && message.voice?
-        result ||= action.match_photo? && message.photo?
+        result ||= message.text_message? && action.match_message?
+        result ||= message.document? && action.match_document?
+        result ||= message.callback? && action.match_callback?
+        result ||= message.voice? && action.match_voice?
+        result ||= message.photo? && action.match_photo?
+        result ||= message.in_group? && action.match_group?
 
         next unless result
 
