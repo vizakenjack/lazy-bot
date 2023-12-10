@@ -81,7 +81,7 @@ module LazyBot
     end
 
     def match_group?
-      mention?
+      message.respond_to?(:mention?) && message.mention?
     end
 
     def user_state

@@ -2,14 +2,14 @@
 
 module LazyBot
   class DecoratedBotClient < SimpleDelegator
-    def on_channel?(channel_id:, user_id:)
+    def on_channel?(channel_id:, user_id:, default: false)
       result = api.get_chat_member(chat_id: channel_id, user_id:)
       return false unless result['ok']
 
       status = result.dig('result', 'status')
       ['member', 'administrator', 'creator'].include?(status)
-    rescue Exception # rubocop:disable Lint/RescueException
-      false
+    rescue StandardError
+      default
     end
 
     def safe_delete_message(chat_id:, message_id:)
