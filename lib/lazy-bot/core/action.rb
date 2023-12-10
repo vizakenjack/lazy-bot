@@ -2,6 +2,8 @@
 
 module LazyBot
   class Action
+    include ExtensionAction
+
     extend Forwardable
     PRIORITY = 0
 
@@ -82,6 +84,10 @@ module LazyBot
 
     def match_group?
       message.respond_to?(:mention?) && message.mention?
+    end
+
+    def match_private?
+      true
     end
 
     def user_state
