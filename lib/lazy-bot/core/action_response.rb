@@ -26,6 +26,8 @@ module LazyBot
     end
 
     def self.text(text, params = {})
+      params[:opts] ||= {}
+      params[:opts][:disable_web_page_preview] = true
       ActionResponse.new(params.merge({ text: }))
     end
 
