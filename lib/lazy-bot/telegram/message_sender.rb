@@ -14,7 +14,7 @@ module LazyBot
       @message = params[:message]
     end
 
-    def_delegators :@action_response, :text, :photo, :parse_mode, :keyboard, :inline
+    def_delegators :@action_response, :text, :photo, :document, :parse_mode, :keyboard, :inline
 
     def send
       begin
@@ -63,6 +63,9 @@ module LazyBot
       if photo
         args[:caption] = text
         send_photo_with_caption(args)
+      elsif document
+        args[:caption] = text
+        send_document_with_caption(args)
       else
         args[:text] = text
         send_text(args)
@@ -76,6 +79,15 @@ module LazyBot
       args.merge!(photo_data)
 
       bot.api.send_photo(**args)
+    end
+
+    def send_document_with_caption(args)
+      document_data = {
+        document: Faraday::UploadIO.new(document, "image/png"),
+      }
+      args.merge!(document_data)
+
+      bot.api.send_document(**args)
     end
 
     def send_text(args)
