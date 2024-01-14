@@ -61,8 +61,12 @@ module LazyBot
       args.merge!(action_response.opts) if action_response.opts.present?
 
       if photo
-        args[:caption] = text
-        send_photo_with_caption(args)
+        if photo.is_a?(Array) && photo.length > 1
+          send_media_group(args)
+        else
+          args[:caption] = text
+          send_photo_with_caption(args)
+        end
       elsif document
         args[:caption] = text
         send_document_with_caption(args)
@@ -73,12 +77,31 @@ module LazyBot
     end
 
     def send_photo_with_caption(args)
-      photo_data = {
-        photo: Faraday::UploadIO.new(photo, "image/jpeg"),
-      }
-      args.merge!(photo_data)
+      final_photo = photo.is_a?(Array) && photo.length == 1 ? photo.first : photo
+
+      photo_content = if final_photo.is_a?(String) && final_photo.start_with?('http')
+                        final_photo
+                      else
+                        Faraday::UploadIO.new(final_photo,
+                                              "image/jpeg")
+                      end
+
+      args.merge!({ photo: photo_content })
 
       bot.api.send_photo(**args)
+    end
+
+    def send_media_group(args)
+      media_group = photo.each_with_index.map do |photo, _index|
+        {
+          type: 'photo',
+          media: photo,
+        }
+      end
+
+      args.merge!({ media: media_group })
+
+      bot.api.send_media_group(**args)
     end
 
     def send_document_with_caption(args)
