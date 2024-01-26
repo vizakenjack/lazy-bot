@@ -78,14 +78,7 @@ module LazyBot
 
     def send_photo_with_caption(args)
       final_photo = photo.is_a?(Array) && photo.length == 1 ? photo.first : photo
-
-      photo_content = if final_photo.is_a?(String) && final_photo.start_with?('http')
-                        final_photo
-                      else
-                        Faraday::UploadIO.new(final_photo,
-                                              "image/jpeg")
-                      end
-
+      photo_content = build_upload(final_photo)
       args.merge!({ photo: photo_content })
 
       bot.api.send_photo(**args)
@@ -106,7 +99,7 @@ module LazyBot
 
     def send_document_with_caption(args)
       document_data = {
-        document: Faraday::UploadIO.new(document, "image/png"),
+        document: build_upload(document),
       }
       args.merge!(document_data)
 
@@ -140,6 +133,14 @@ module LazyBot
         obj
       else
         raise ArgumentError
+      end
+    end
+
+    def build_upload(file_or_url, type: 'image/jpeg')
+      if file_or_url.is_a?(String) && file_or_url.start_with?('http')
+        file_or_url
+      else
+        Faraday::UploadIO.new(file_or_url, type)
       end
     end
   end

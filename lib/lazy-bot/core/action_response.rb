@@ -57,7 +57,7 @@ module LazyBot
     end
 
     def present?
-      text.present? || notice.present? || photo.present? || inline.present?
+      text.present? || notice.present? || photo.present? || inline.present? || document.present?
     end
 
     def reply_markup

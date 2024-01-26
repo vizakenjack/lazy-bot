@@ -14,10 +14,12 @@ module LazyBot
       @chat = @message.chat
     end
 
-    def_delegators :@action_response, :text, :notice
+    def_delegators :@action_response, :text, :notice, :photo
 
     def send
       delete_previous_message if action_response.replace
+
+      clear_inline_markup if action_response.clear_inline
 
       if text
         if action_response.edit
@@ -28,12 +30,12 @@ module LazyBot
         end
       elsif notice
         answer_with_notice notice
+      elsif photo || document
+        answer_with_message
       end
 
       if action_response.inline && action_response.text.blank?
         edit_inline_markup
-      elsif action_response.clear_inline
-        clear_inline_markup
       end
     end
 
