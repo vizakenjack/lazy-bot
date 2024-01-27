@@ -30,7 +30,7 @@ module LazyBot
         end
       elsif notice
         answer_with_notice notice
-      elsif photo || document
+      elsif photo
         answer_with_message
       end
 
