@@ -17,7 +17,7 @@ Gem::Specification.new do |spec|
   spec.files = Dir['lib/**/*.rb']
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "telegram-bot-ruby", "~> 1.0"
-  spec.add_development_dependency "bundler", "~> 2.3"
-  spec.add_development_dependency "rake", "~> 13.0.1"
+  spec.add_runtime_dependency "telegram-bot-ruby", "~> 2.0"
+  spec.add_development_dependency "bundler", "~> 2.5"
+  spec.add_development_dependency "rake", "~> 13.1"
 end

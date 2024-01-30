@@ -1,13 +1,9 @@
-# frozen_string_literal: true
-
 module LazyBot
   class DecoratedBotClient < SimpleDelegator
     def on_channel?(channel_id:, user_id:, default: false)
-      result = api.get_chat_member(chat_id: channel_id, user_id:)
-      return false unless result['ok']
+      result = bot.api.get_chat_member(chat_id: channel_id, user_id:)
 
-      status = result.dig('result', 'status')
-      ['member', 'administrator', 'creator'].include?(status)
+      ['member', 'administrator', 'creator'].include?(result.status)
     rescue StandardError
       default
     end

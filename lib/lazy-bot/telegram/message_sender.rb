@@ -18,12 +18,12 @@ module LazyBot
 
     def send
       begin
+        MyLogger.debug "sending '#{text}' to #{chat&.username || chat_id} (#{chat_id})"
         send_with_params
       rescue StandardError => e
+        raise e if ENV['BOT_ENV'] != 'production'
         MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
       end
-
-      MyLogger.debug "sending '#{text}' to #{chat&.username || chat_id} (#{chat_id})"
     end
 
     # only for callbacks
