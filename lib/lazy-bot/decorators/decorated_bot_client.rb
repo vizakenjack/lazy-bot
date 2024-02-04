@@ -1,7 +1,7 @@
 module LazyBot
   class DecoratedBotClient < SimpleDelegator
     def on_channel?(channel_id:, user_id:, default: false)
-      result = bot.api.get_chat_member(chat_id: channel_id, user_id:)
+      result = api.get_chat_member(chat_id: channel_id, user_id:)
 
       ['member', 'administrator', 'creator'].include?(result.status)
     rescue StandardError
