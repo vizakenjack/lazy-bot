@@ -58,6 +58,14 @@ module LazyBot
       respond_to?(:voice) && voice.present?
     end
 
+    def new_chat_members?
+      respond_to?(:new_chat_members) && new_chat_members.present?
+    end
+
+    def left_chat_member?
+      respond_to?(:left_chat_member) && left_chat_member.present?
+    end
+
     def forward?
       (respond_to?(:forward_from) && forward_from.present?) ||
         (respond_to?(:forward_sender_name) && forward_sender_name.present?)
@@ -72,6 +80,10 @@ module LazyBot
       return nil unless respond_to?(:reply_to_message)
 
       reply_to_message&.date
+    end
+
+    def supported?
+      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member?
     end
 
     def unsupported?

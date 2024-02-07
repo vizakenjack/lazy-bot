@@ -4,7 +4,7 @@ module LazyBot
   class MessageSender
     extend Forwardable
 
-    attr_reader :bot, :text, :chat, :chat_id, :action_response, :message
+    attr_reader :bot, :chat, :chat_id, :action_response, :message
 
     def initialize(params)
       @bot = params[:bot]
@@ -57,6 +57,10 @@ module LazyBot
         reply_markup: action_response.reply_markup,
         parse_mode:,
       }
+
+      if message.respond_to?(:message_thread_id) && message.message_thread_id
+        args[:reply_to_message_id] = message.message_thread_id
+      end
 
       args.merge!(action_response.opts) if action_response.opts.present?
 

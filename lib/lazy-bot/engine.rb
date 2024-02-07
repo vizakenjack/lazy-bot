@@ -62,33 +62,26 @@ module LazyBot
 
       return false if decorated_message.unsupported?
 
-      repo = @config.repo_class.new(config:, bot: @bot).tap { |r| r.find_or_create_user(decorated_message) }
+      repo = @config.repo_class.new(config:, bot: @bot, message: decorated_message)
 
-      options = {
-        bot: @bot,
-        message: decorated_message,
-        config:,
-        repo:,
-      }
-
-      if decorated_message.callback? || decorated_message.text_message? || decorated_message.document? || decorated_message.voice? || decorated_message.photo?
-        handle_message(options, decorated_message)
+      if decorated_message.supported?
+        handle_message(repo)
       else
         handle_unknown_message(message)
       end
     end
 
-    def handle_message(options, message)
+    def handle_message(repo)
+      message = repo.message
       text = message.try(:text) || message.try(:data)
       MyLogger.warn("Received message: #{text}")
 
-      # action_response = matched_action_response(options)
-      matched_action = find_matched_action(options, message)
+      matched_action = find_matched_action(repo)
       return unless matched_action
 
       chat = message.callback? ? message.message.chat : message.chat
       responder = message.callback? ? CallbackResponder : MessageSender
-      args = { bot: options[:bot], chat:, message: }
+      args = { bot: repo.bot, chat:, message: }
 
       if (before_finish_action = matched_action.before_finish)
         args.merge!(action_response: before_finish_action)
@@ -112,15 +105,6 @@ module LazyBot
         responder.new(**args).send
       end
     end
-
-    # def handle_photos(options, message)
-    #   args = { bot: options[:bot], chat: message.chat }
-
-    #   action_response = ActionResponse.text("Бот пока не умеет распознавать фото — эта возможность появится, когда откроют доступ для разработчиков")
-    #   args.merge!({ action_response: })
-
-    #   MessageSender.new(**args).send
-    # end
 
     def handle_unknown_message(message)
       text = message.try(:text) || message.try(:data)
@@ -157,12 +141,13 @@ module LazyBot
 
     private
 
-    def find_matched_action(options, message)
+    def find_matched_action(repo)
+      message = repo.message
       start_actions = []
       finish_actions = []
 
       @actions.each do |action_class|
-        action = action_class.new(options)
+        action = action_class.new(repo)
 
         result = false
         if message.in_group?
@@ -176,6 +161,8 @@ module LazyBot
         result ||= message.callback? && action.match_callback?
         result ||= message.voice? && action.match_voice?
         result ||= message.photo? && action.match_photo?
+        result ||= message.left_chat_member? && action.match_left_chat_member?
+        result ||= message.new_chat_members? && action.match_new_chat_members?
 
         next unless result
 

@@ -2,35 +2,22 @@
 
 module LazyBot
   class Action
-    include ExtensionAction
-
     extend Forwardable
     PRIORITY = 0
 
-    attr_reader :bot, :text, :message, :repo, :config, :params
+    attr_reader :repo, :text
 
-    def initialize(params)
-      raise ArgumentError, 'Bot is not set' unless params[:bot]
-      raise ArgumentError, 'Message is not set' unless params[:message]
-      raise ArgumentError, 'Config is not set' unless params[:config]
-      raise ArgumentError, 'Repo is not set' unless params[:repo]
-
-      @bot = params[:bot]
-      @message = params[:message]
-      @repo = params[:repo]
-      @config = params[:config]
-      @text = @message.content
-      # params to be used in from_action
-      @params = params
+    def initialize(repo)
+      @repo = repo
+      @text = @repo.message.content
     end
 
-    def_delegators :@repo, :api, :user
+    def_delegators :@repo, :api, :user, :bot, :message, :config
 
     alias callback text
 
-    def self.from_action(action, **opts)
-      opts ||= {}
-      new(action.params.merge(opts))
+    def self.from_action(action)
+      new(action.repo)
     end
 
     def start_condition
@@ -88,6 +75,14 @@ module LazyBot
 
     def match_private?
       true
+    end
+
+    def match_new_chat_members?
+      false
+    end
+
+    def match_left_chat_member?
+      false
     end
 
     def user_state
