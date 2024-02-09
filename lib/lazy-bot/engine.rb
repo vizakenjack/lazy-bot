@@ -5,7 +5,7 @@ module LazyBot
   class Engine
     extend Forwardable
 
-    attr_reader :config
+    attr_reader :config, :bot
 
     def initialize(config)
       @@loaded_actions = []
@@ -26,7 +26,29 @@ module LazyBot
     def start!
       @bot.run do |bot|
         bot.listen do |message|
-          respond_message(message)
+            respond_message(message)
+        rescue Telegram::Bot::Exceptions::ResponseError => e
+          raise e if ENV['BOT_ENV'] == 'development'
+
+          puts "Got telegram response error: #{e}"
+        rescue StandardError => e
+          MyLogger.error "message = #{e.message}"
+          MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
+          raise if ENV['BOT_ENV'] == 'development'
+        end
+      end
+    end
+
+    def start_threaded!
+      @bot.run do |bot|
+        bot.listen do |message|
+          Thread.new(message) do |message|
+            FiberScheduler do
+              Fiber.schedule do
+                respond_message(message)
+              end
+            end
+          end
         rescue Telegram::Bot::Exceptions::ResponseError => e
           raise e if ENV['BOT_ENV'] == 'development'
 
@@ -62,7 +84,7 @@ module LazyBot
 
       return false if decorated_message.unsupported?
 
-      repo = @config.repo_class.new(config:, bot: @bot, message: decorated_message)
+      repo = @config.repo_class.new(config:, bot: , message: decorated_message)
 
       if decorated_message.supported?
         handle_message(repo)
@@ -139,8 +161,6 @@ module LazyBot
       @actions.sort_by! { |e| -e::PRIORITY }
     end
 
-    private
-
     def find_matched_action(repo)
       message = repo.message
       start_actions = []
@@ -180,6 +200,8 @@ module LazyBot
         finish_actions.first
       end
     end
+
+    private
 
     def find_files(*paths, ignore_error: true) # :yield: path
       block_given? or return enum_for(__method__, *paths, ignore_error:)

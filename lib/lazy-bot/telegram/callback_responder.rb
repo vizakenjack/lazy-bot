@@ -17,7 +17,7 @@ module LazyBot
     def_delegators :@action_response, :text, :notice, :photo
 
     def send
-      delete_previous_message if action_response.replace
+      delete_previous_message if action_response.delete
 
       clear_inline_markup if action_response.clear_inline
 
@@ -42,8 +42,9 @@ module LazyBot
     private
 
     def delete_previous_message
+      puts "Deleting previous message"
       @bot.api.delete_message(chat_id: chat.id, message_id: message.message_id)
-    rescue Exception => e # rubocop:disable Lint/RescueException
+    rescue StandardError => e 
       MyLogger.error "Cant delete #{message.message_id}, with new text: #{action_response.text}"
     end
 

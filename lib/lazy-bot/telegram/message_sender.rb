@@ -9,7 +9,8 @@ module LazyBot
     def initialize(params)
       @bot = params[:bot]
       @chat = params[:chat]
-      @chat_id = params[:chat]&.id || params[:id] || params[:message]&.chat&.id
+      # todo: remove params[:id]
+      @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id
       @action_response = build_action_response(params)
       @message = params[:message]
     end
@@ -19,6 +20,8 @@ module LazyBot
     def send
       begin
         MyLogger.debug "sending '#{text}' to #{chat&.username || chat_id} (#{chat_id})"
+        delete_previous_message if action_response.delete
+
         send_with_params
       rescue StandardError => e
         raise e if ENV['BOT_ENV'] != 'production'
@@ -146,6 +149,13 @@ module LazyBot
       else
         Faraday::UploadIO.new(file_or_url, type)
       end
+    end
+
+    def delete_previous_message
+      puts "Deleting previous message"
+      @bot.api.delete_message(chat_id: chat_id, message_id: message.message_id)
+    rescue StandardError => e
+      MyLogger.error "Cant delete #{message.message_id}, with new text: #{action_response.text}"
     end
   end
 end

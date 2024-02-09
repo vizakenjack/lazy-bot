@@ -21,6 +21,10 @@ module LazyBot
       callback? ? message.chat : chat
     end
 
+    def chat_id
+      message_chat.id
+    end
+
     # only for callback and text
     def content
       if respond_to?(:text)
