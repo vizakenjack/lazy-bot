@@ -20,7 +20,7 @@ module LazyBot
     def send
       begin
         MyLogger.debug "sending '#{text}' to #{chat&.username || chat_id} (#{chat_id})"
-        delete_previous_message if action_response.delete
+        delete_previous_message if action_response.delete && message.present?
 
         send_with_params
       rescue StandardError => e
