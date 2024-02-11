@@ -35,7 +35,7 @@ module LazyBot
     end
 
     def callback?
-      !respond_to?(:chat) && data.present?
+      respond_to?(:data) && data.present?
     end
 
     def text_message?

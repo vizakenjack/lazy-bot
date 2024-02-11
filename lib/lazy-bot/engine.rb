@@ -99,7 +99,10 @@ module LazyBot
       MyLogger.warn("Received message: #{text}")
 
       matched_action = find_matched_action(repo)
-      return unless matched_action
+      if matched_action.nil?
+        puts "Cant find matched action for #{text}" if DEVELOPMENT
+        return
+      end
 
       chat = message.callback? ? message.message.chat : message.chat
       responder = message.callback? ? CallbackResponder : MessageSender

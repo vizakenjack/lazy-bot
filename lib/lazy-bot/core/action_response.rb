@@ -7,6 +7,8 @@ module LazyBot
 
     def initialize(params)
       @text = params[:text]
+      raise TypeError, 'text must be a string' if @text.present? && !text.is_a?(String)
+      
       @notice = params[:notice]
       @keyboard = params[:keyboard] || []
       @inline = params[:inline]

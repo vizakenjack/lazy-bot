@@ -24,8 +24,8 @@ module LazyBot
 
         send_with_params
       rescue StandardError => e
-        raise e if ENV['BOT_ENV'] != 'production'
         MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
+        raise e if ENV['BOT_ENV'] != 'production'
       end
     end
 
