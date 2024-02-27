@@ -26,7 +26,7 @@ module LazyBot
     def start!
       @bot.run do |bot|
         bot.listen do |message|
-            respond_message(message)
+          respond_message(message)
         rescue Telegram::Bot::Exceptions::ResponseError => e
           raise e if ENV['BOT_ENV'] == 'development'
 

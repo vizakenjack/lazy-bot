@@ -23,6 +23,14 @@ module LazyBot
       @opts = params[:opts]
     end
 
+    def self.from_json(json)
+      if json.is_a?(String)
+        text(json)
+      else
+        new(**json['action'].symbolize_keys, opts: {disable_web_page_preview: true})
+      end
+    end
+
     # being skipped on handle_text_message
     def self.empty
       ActionResponse.new(text: '')
