@@ -18,7 +18,13 @@ module LazyBot
     end
 
     def message_chat
-      callback? ? message.chat : chat
+      if inline_query?
+        nil
+      elsif callback?
+        message.respond_to?(:chat) ?  message.chat : nil
+      else
+        chat
+      end
     end
 
     def chat_id
@@ -40,6 +46,10 @@ module LazyBot
 
     def text_message?
       is_a?(Telegram::Bot::Types::Message) && text.present?
+    end
+
+    def inline_query?
+      is_a?(Telegram::Bot::Types::InlineQuery)
     end
 
     def in_group?
@@ -87,7 +97,7 @@ module LazyBot
     end
 
     def supported?
-      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member?
+      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member? || inline_query?
     end
 
     def unsupported?

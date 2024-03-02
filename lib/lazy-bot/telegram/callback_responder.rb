@@ -11,7 +11,10 @@ module LazyBot
       @callback = params[:message]
       @message = @callback.message
       @action_response = params[:action_response]
-      @chat = @message.chat
+    end
+
+    def chat
+      @chat ||= message.chat
     end
 
     def_delegators :@action_response, :text, :notice, :photo

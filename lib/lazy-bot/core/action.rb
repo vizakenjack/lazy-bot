@@ -61,6 +61,10 @@ module LazyBot
       false
     end
 
+    def match_inline?
+      false
+    end
+
     def match_document?
       false
     end

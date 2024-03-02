@@ -82,6 +82,7 @@ module LazyBot
       puts "message = #{message.to_h}" if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
       decorated_message = DecoratedMessage.new(message, config)
 
+      binding.pry() if DEVELOPMENT
       return false if decorated_message.unsupported?
 
       repo = @config.repo_class.new(config:, bot: , message: decorated_message)
@@ -103,9 +104,9 @@ module LazyBot
         puts "Cant find matched action for #{text}" if DEVELOPMENT
         return
       end
-
-      chat = message.callback? ? message.message.chat : message.chat
-      responder = message.callback? ? CallbackResponder : MessageSender
+      
+      chat = message.message_chat
+      responder = find_responder(message)
       args = { bot: repo.bot, chat:, message: }
 
       if (before_finish_action = matched_action.before_finish)
@@ -182,6 +183,7 @@ module LazyBot
         result ||= message.text_message? && action.match_message?
         result ||= message.document? && action.match_document?
         result ||= message.callback? && action.match_callback?
+        result ||= message.inline_query? && action.match_inline?
         result ||= message.voice? && action.match_voice?
         result ||= message.photo? && action.match_photo?
         result ||= message.left_chat_member? && action.match_left_chat_member?
@@ -205,6 +207,16 @@ module LazyBot
     end
 
     private
+
+    def find_responder(message)
+      if message.callback?
+        CallbackResponder
+      elsif message.inline_query?
+        InlineResponder
+      else
+        MessageSender
+      end
+    end
 
     def find_files(*paths, ignore_error: true) # :yield: path
       block_given? or return enum_for(__method__, *paths, ignore_error:)
