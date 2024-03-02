@@ -82,7 +82,6 @@ module LazyBot
       puts "message = #{message.to_h}" if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
       decorated_message = DecoratedMessage.new(message, config)
 
-      binding.pry() if DEVELOPMENT
       return false if decorated_message.unsupported?
 
       repo = @config.repo_class.new(config:, bot: , message: decorated_message)

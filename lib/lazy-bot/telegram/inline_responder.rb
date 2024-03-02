@@ -17,7 +17,7 @@ module LazyBot
     def send
       return false if action_response.is_a?(InlineResponse) == false
       
-      @bot.api.answer_inline_query(inline_query_id: message.id, results: action_response.results)
+      @bot.api.answer_inline_query(inline_query_id: message.id, results: action_response.results, is_personal: true, cache_time: 0)
     rescue Telegram::Bot::Exceptions::ResponseError
       "ok"
     end
