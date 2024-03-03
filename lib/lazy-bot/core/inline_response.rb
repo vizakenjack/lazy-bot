@@ -12,7 +12,7 @@ module LazyBot
     end
 
     def present?
-      results.present?
+      results != nil
     end
   end
 end

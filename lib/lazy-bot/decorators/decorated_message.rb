@@ -81,8 +81,7 @@ module LazyBot
     end
 
     def forward?
-      (respond_to?(:forward_from) && forward_from.present?) ||
-        (respond_to?(:forward_sender_name) && forward_sender_name.present?)
+      respond_to?(:forward_origin) && forward_origin.present?
     end
 
     def reply_to_bot?
