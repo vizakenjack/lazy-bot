@@ -36,7 +36,6 @@ module LazyBot
     end
 
     def self.error(text = nil)
-      puts text if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
       find_or_init('error.log').tap { |log| log.error(text) if text }
     end
 
@@ -44,23 +43,31 @@ module LazyBot
       @logger.level = level
     end
 
-    def debug(message, user: nil)
-      message = "User id=#{user.id} name=#{user.name}: #{message}" if user
+    def debug(text, user: nil)
+      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+      
+      message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.debug(message)
     end
 
-    def info(message, user: nil)
-      message = "User id=#{user.id} name=#{user.name}: #{message}" if user
+    def info(text, user: nil)
+      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+
+      message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.info(message)
     end
 
-    def error(message, user: nil)
-      message = "User id=#{user.id} name=#{user.name}: #{message}" if user
+    def error(text, user: nil)
+      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+
+      message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.error(message)
     end
 
-    def warn(message, user: nil)
-      message = "User id=#{user.id} name=#{user.name}: #{message}" if user
+    def warn(text, user: nil)
+      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+
+      message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.warn(message)
     end
   end

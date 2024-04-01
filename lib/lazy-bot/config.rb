@@ -9,7 +9,7 @@ module LazyBot
       env = ENV['BOT_ENV'] || 'development'
       @conf = full_conf[env.to_sym]
 
-      @bot_username = conf[:bot_username] || raise('Username is not set')
+      @bot_username = conf[:bot_username]&.delete('@') || raise('Username is not set')
       @telegram_token = conf[:telegram_token] || raise('Token is not set')
       @actions_path = conf[:actions_path] || raise('Actions path is not set')
       @repo_class = repo_class
