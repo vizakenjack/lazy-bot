@@ -1,5 +1,5 @@
 # frozen_string_literal: true
 
 module LazyBot
-  VERSION = '2.22.4'
+  VERSION = '2.23.0'
 end

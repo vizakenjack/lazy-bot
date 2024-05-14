@@ -184,6 +184,7 @@ module LazyBot
         result ||= message.callback? && action.match_callback?
         result ||= message.inline_query? && action.match_inline?
         result ||= message.voice? && action.match_voice?
+        result ||= message.video? && action.match_video?
         result ||= message.photo? && action.match_photo?
         result ||= message.left_chat_member? && action.match_left_chat_member?
         result ||= message.new_chat_members? && action.match_new_chat_members?

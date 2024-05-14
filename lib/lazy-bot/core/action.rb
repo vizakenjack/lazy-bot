@@ -73,6 +73,10 @@ module LazyBot
       false
     end
 
+    def match_video?
+      false
+    end
+
     def match_group?
       message.respond_to?(:mention?) && message.mention?
     end
