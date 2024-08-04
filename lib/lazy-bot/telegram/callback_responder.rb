@@ -45,7 +45,7 @@ module LazyBot
     private
 
     def delete_previous_message
-      puts "Deleting previous message"
+      puts "Deleting previous message: #{message.to_h}" if DEVELOPMENT
       @bot.api.delete_message(chat_id: chat.id, message_id: message.message_id)
     rescue StandardError => e 
       MyLogger.error "Cant delete #{message.message_id}, with new text: #{action_response.text}"

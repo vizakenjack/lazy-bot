@@ -26,6 +26,7 @@ module LazyBot
       rescue StandardError => e
         MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
         raise e if ENV['BOT_ENV'] != 'production'
+        nil
       end
     end
 
@@ -152,7 +153,6 @@ module LazyBot
     end
 
     def delete_previous_message
-      puts "Deleting previous message"
       @bot.api.delete_message(chat_id: chat_id, message_id: message.message_id)
     rescue StandardError => e
       MyLogger.error "Cant delete #{message.message_id}, with new text: #{action_response.text}"
