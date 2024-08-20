@@ -86,7 +86,7 @@ module LazyBot
 
     def send_photo_with_caption(args)
       final_photo = photo.is_a?(Array) && photo.length == 1 ? photo.first : photo
-      photo_content = build_upload(final_photo)
+      photo_content = build_upload(final_photo, type: action_response.mime ||  'image/jpeg') 
       args.merge!({ photo: photo_content })
 
       bot.api.send_photo(**args)
@@ -107,9 +107,11 @@ module LazyBot
 
     def send_document_with_caption(args)
       document_data = {
-        document: build_upload(document),
+        document: build_upload(document, type: action_response.mime ||  'image/jpeg'),
       }
       args.merge!(document_data)
+
+      puts "args = #{args.inspect}"
 
       bot.api.send_document(**args)
     end
@@ -144,7 +146,7 @@ module LazyBot
       end
     end
 
-    def build_upload(file_or_url, type: 'image/jpeg')
+    def build_upload(file_or_url, type)
       if file_or_url.is_a?(String) && file_or_url.start_with?('http')
         file_or_url
       else

@@ -17,7 +17,7 @@ module LazyBot
       @chat ||= message.chat
     end
 
-    def_delegators :@action_response, :text, :notice, :photo
+    def_delegators :@action_response, :text, :notice, :photo, :document
 
     def send
       delete_previous_message if action_response.delete && message.present?
@@ -33,8 +33,10 @@ module LazyBot
         end
       elsif notice
         answer_with_notice notice
-      elsif photo
+      elsif photo || document
         answer_with_message
+      elsif DEVELOPMENT
+        puts "No action found for callback: #{callback.data}"
       end
 
       if action_response.inline && action_response.text.blank?

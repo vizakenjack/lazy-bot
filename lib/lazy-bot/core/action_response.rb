@@ -2,8 +2,8 @@
 
 module LazyBot
   class ActionResponse
-    attr_accessor :text, :notice, :keyboard, :inline, :photo, :document, :parse_mode, :alert, :clear_inline, :edit_inline, :edit, :delete,
-                  :opts
+    attr_accessor :text, :notice, :keyboard, :inline, :photo, :document, :mime, :parse_mode, :alert, :clear_inline, 
+                  :edit_inline, :edit, :delete, :opts
 
     def initialize(params)
       @text = params[:text]
@@ -14,6 +14,7 @@ module LazyBot
       @inline = params[:inline]
       @photo = params[:photo]
       @document = params[:document]
+      @mime = params[:mime]
       @parse_mode = params[:parse_mode]
       @alert = params[:alert]
       @clear_inline = params[:clear_inline]
