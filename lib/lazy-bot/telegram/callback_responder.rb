@@ -20,7 +20,7 @@ module LazyBot
     def_delegators :@action_response, :text, :notice, :photo, :document
 
     def send
-      delete_previous_message if action_response.delete && message.present?
+      delete_previous_message if action_response.present? && action_response.delete && message.present?
 
       clear_inline_markup if action_response.clear_inline
 

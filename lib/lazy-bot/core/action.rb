@@ -104,7 +104,8 @@ module LazyBot
         finish
       end
     rescue StandardError => e
-      config.on_error(e)
+      scope = { action: self.class.name, text: text }
+      config.on_error(e, scope: )
       MyLogger.error "message = #{e.message}"
       MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
 

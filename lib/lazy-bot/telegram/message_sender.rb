@@ -111,7 +111,6 @@ module LazyBot
       }
       args.merge!(document_data)
 
-      puts "args = #{args.inspect}"
 
       bot.api.send_document(**args)
     end
