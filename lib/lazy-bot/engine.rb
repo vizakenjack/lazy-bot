@@ -186,6 +186,7 @@ module LazyBot
         result ||= message.voice? && action.match_voice?
         result ||= message.video? && action.match_video?
         result ||= message.photo? && action.match_photo?
+        result ||= message.audio? && action.match_audio?
         result ||= message.left_chat_member? && action.match_left_chat_member?
         result ||= message.new_chat_members? && action.match_new_chat_members?
 

@@ -76,6 +76,10 @@ module LazyBot
       respond_to?(:video_note) && video_note.present?
     end
 
+    def audio?
+      respond_to?(:audio) && audio.present?
+    end
+
     def new_chat_members?
       respond_to?(:new_chat_members) && new_chat_members.present?
     end
@@ -100,7 +104,7 @@ module LazyBot
     end
 
     def supported?
-      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member? || inline_query? || video?
+      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member? || inline_query? || video? || audio?
     end
 
     def unsupported?

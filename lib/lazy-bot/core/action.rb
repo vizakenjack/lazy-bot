@@ -77,6 +77,10 @@ module LazyBot
       false
     end
 
+    def match_audio?
+      false
+    end
+
     def match_group?
       message.respond_to?(:mention?) && message.mention?
     end
