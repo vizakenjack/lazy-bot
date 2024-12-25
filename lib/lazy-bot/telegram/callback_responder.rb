@@ -71,6 +71,7 @@ module LazyBot
       @bot.api.answer_callback_query(callback_query_id: callback.id)
     rescue Telegram::Bot::Exceptions::ResponseError
       MyLogger.error "Cant answer callback query"
+  
     end
 
     def edit_message

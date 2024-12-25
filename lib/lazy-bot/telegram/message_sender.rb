@@ -31,7 +31,7 @@ module LazyBot
     end
 
     # only for callbacks
-    def edit
+    def edit(skip_parse_mode: false)
       begin
         args = {
           chat_id:,
@@ -45,9 +45,18 @@ module LazyBot
 
         args.merge!(action_response.opts) if action_response.opts.present?
 
+        if skip_parse_mode
+          args[:parse_mode] = nil
+        end
+
         bot.api.edit_message_text(**args)
+        
       rescue StandardError => e
+        if e.message.include?('can\'t parse entities')
+          return edit(skip_parse_mode: true)
+        end
         MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
+        return false
       end
 
       MyLogger.debug "Editing '#{text}' to #{chat&.username || chat_id} (#{chat_id})"
