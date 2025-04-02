@@ -7,17 +7,17 @@ module LazyBot
 
     attr_reader :repo, :text
 
-    def initialize(repo)
+    def initialize(repo, text: nil)
       @repo = repo
-      @text = @repo.message.content
+      @text = text || @repo.message.content
     end
 
     def_delegators :@repo, :api, :user, :bot, :message, :config
 
     alias callback text
 
-    def self.from_action(action)
-      new(action.repo)
+    def self.from_action(action, text: nil)
+      new(action.repo, text: text)
     end
 
     def start_condition
