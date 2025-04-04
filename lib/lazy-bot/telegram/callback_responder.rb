@@ -56,7 +56,7 @@ module LazyBot
     def answer_with_notice(notice)
       @bot.api.answer_callback_query(callback_query_id: callback.id, text: notice, show_alert: action_response.alert)
     rescue Telegram::Bot::Exceptions::ResponseError
-      MyLogger.error "Cant answer callback query"
+      MyLogger.error "Cant answer callback query: delete_previous_message"
     end
 
     def answer_with_message
@@ -70,7 +70,7 @@ module LazyBot
 
       @bot.api.answer_callback_query(callback_query_id: callback.id)
     rescue Telegram::Bot::Exceptions::ResponseError
-      MyLogger.error "Cant answer callback query"
+      MyLogger.error "Cant answer callback query: answer_with_message"
   
     end
 
@@ -86,7 +86,7 @@ module LazyBot
 
       @bot.api.answer_callback_query(callback_query_id: callback.id)
     rescue StandardError => e
-      MyLogger.error "Cant answer callback query"
+      MyLogger.error "Cant answer callback query: edit_message"
     end
 
     def clear_inline_markup
@@ -98,7 +98,7 @@ module LazyBot
 
       bot.api.edit_message_reply_markup(**args)
     rescue StandardError => e
-      MyLogger.error "Cant answer callback query"
+      MyLogger.error "Cant answer callback query: clear_inline_markup"
     end
 
     def edit_inline_markup
@@ -109,7 +109,7 @@ module LazyBot
       }
       bot.api.edit_message_reply_markup(**args)
     rescue StandardError => e
-      MyLogger.error "Cant answer callback query"
+      MyLogger.error "Cant answer callback query: edit_inline_markup"
     end
   end
 end
