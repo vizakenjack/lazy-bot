@@ -95,7 +95,8 @@ module LazyBot
 
     def send_photo_with_caption(args)
       final_photo = photo.is_a?(Array) && photo.length == 1 ? photo.first : photo
-      photo_content = build_upload(final_photo, type: action_response.mime ||  'image/jpeg') 
+      photo_type = (final_photo.is_a?(String) && final_photo.end_with?('.png')) ? 'image/png' : 'image/jpeg'
+      photo_content = build_upload(final_photo, type: action_response.mime ||  photo_type) 
       args.merge!({ photo: photo_content })
 
       bot.api.send_photo(**args)
