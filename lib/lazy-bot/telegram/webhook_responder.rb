@@ -111,10 +111,6 @@ module LazyBot
         **action_response.opts,
       }
 
-      if action_response.parse_mode
-        base_params[:parse_mode] = action_response.parse_mode
-      end
-
       if action_response.reply_markup
         base_params[:reply_markup] = action_response.reply_markup
       end
@@ -135,10 +131,6 @@ module LazyBot
         **action_response.opts,
       }
 
-      if action_response.parse_mode
-        base_params[:parse_mode] = action_response.parse_mode
-      end
-
       if action_response.inline
         base_params[:reply_markup] = action_response.reply_markup
       end
@@ -156,10 +148,6 @@ module LazyBot
         caption: action_response.text,
         **action_response.opts,
       }
-
-      if action_response.parse_mode
-        base_params[:parse_mode] = action_response.parse_mode
-      end
 
       if action_response.reply_markup
         base_params[:reply_markup] = action_response.reply_markup
@@ -192,9 +180,7 @@ module LazyBot
         caption: action_response.text,
         reply_markup: action_response.reply_markup,
         **action_response.opts,
-      }.tap do |val|
-        val[:parse_mode] = action_response.parse_mode if action_response.parse_mode
-      end
+      }
     end
 
     def edit_inline_markup_action

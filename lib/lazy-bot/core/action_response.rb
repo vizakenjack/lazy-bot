@@ -2,7 +2,7 @@
 
 module LazyBot
   class ActionResponse
-    attr_accessor :text, :notice, :keyboard, :inline, :photo, :document, :audio, :mime, :parse_mode, :alert, :clear_inline,
+    attr_accessor :text, :notice, :keyboard, :inline, :photo, :document, :audio, :mime, :alert, :clear_inline,
                   :edit_inline, :edit, :delete, :opts
 
     def initialize(params)
@@ -19,13 +19,16 @@ module LazyBot
       @document = params[:document]
       @audio = params[:audio]
       @mime = params[:mime]
-      @parse_mode = params[:parse_mode]
       @alert = params[:alert]
       @clear_inline = params[:clear_inline]
       @edit_inline = params[:edit_inline]
       @delete = params[:delete]
       @edit = params[:edit]
-      @opts = params[:opts]
+      @opts = params[:opts] || {}
+
+      if params[:parse_mode]
+        @opts[:parse_mode] = params[:parse_mode]
+      end
     end
 
     def self.from_json(json)
