@@ -89,6 +89,7 @@ module LazyBot
 
       if notice
         return {
+          method: make_method,
           callback_query_id: message.id,
           text: notice,
           show_alert: alert
