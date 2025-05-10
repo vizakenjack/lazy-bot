@@ -28,11 +28,7 @@ module LazyBot
     end
 
     def message_id
-      if callback?
-        message.message.message_id
-      else
-        message.message_id
-      end
+      message.message_id
     end
 
     def chat_id
