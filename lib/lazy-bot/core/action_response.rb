@@ -87,7 +87,7 @@ module LazyBot
       puts "Params for as_json: #{@params}"
 
       is_edit = edit || edit_inline
-      method = is_edit ? 'editMessage' : 'sendMessage'
+      method = is_edit ? 'editMessageText' : 'sendMessage'
 
       data = {
         method:,
