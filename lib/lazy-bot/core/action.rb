@@ -10,7 +10,6 @@ module LazyBot
     def initialize(context, text: nil)
       @context = context
       @repo = context.build_repo
-      puts "Context message is #{@context.message.inspect}"
       @text = text || @context.message.content
     end
 

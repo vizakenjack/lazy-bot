@@ -1,4 +1,5 @@
-require: []
+require:
+  - rubocop-rails
 
-Rails:
+Rails/Delegate:
   Enabled: false

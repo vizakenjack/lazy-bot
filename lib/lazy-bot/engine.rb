@@ -40,7 +40,7 @@ module LazyBot
     end
 
     def process_webhook_request(params)
-      update_id = params["update_id"]
+      update_id = params['update_id']
 
       return unless new_request?(update_id)
 
@@ -57,7 +57,7 @@ module LazyBot
     end
 
     def respond_message(message)
-      puts "respond_message: #{message.to_h}" if ['development', 'staging'].include?(ENV['BOT_ENV'])
+      puts "respond_message: #{message.to_h}" if %w[development staging].include?(ENV['BOT_ENV'])
       decorated_message = DecoratedMessage.new(message, config)
 
       return false if decorated_message.unsupported?
@@ -89,17 +89,17 @@ module LazyBot
       end
 
       if matched_action.webhook_response?
-        puts "Handle sync"
+        puts 'Handle sync'
         handle_sync(responder, matched_action)
       else
-        puts "Handle async"
+        puts 'Handle async'
         handle_async(responder, matched_action)
 
         ActionResponse.empty
       end
     end
 
-    def handle_sync(responder, matched_action)
+    def handle_sync(_responder, matched_action)
       action_response = matched_action.to_output
 
       puts "action_response2 = #{action_response}"
@@ -128,17 +128,14 @@ module LazyBot
         action_response = matched_action.to_output
 
         if action_response.present?
-          args.merge!(action_response:)
-          responder.new(**args).send
+          responder.new(matched_action.context, action_response).send
         elsif action_response.nil?
-          action_response = ActionResponse.text(I18n.t("errors.unknown_command"))
-          args.merge!({ action_response: })
-          responder.new(**args).send
+          action_response = ActionResponse.text(I18n.t('errors.unknown_command'))
+          responder.new(matched_action.context, action_response).send
         end
 
         if (after_finish_action = matched_action.after_finish)
-          args.merge!(action_response: after_finish_action)
-          responder.new(**args).send
+          responder.new(matched_action.context, after_finish_action).send
         end
       end
     end
@@ -156,7 +153,7 @@ module LazyBot
         next if file == actions_path
 
         extname = File.extname(file)
-        next if extname != ".rb"
+        next if extname != '.rb'
 
         basename = File.basename(file, '.rb')
         module_name = file.split('/')[1].capitalize.classify
@@ -234,7 +231,7 @@ module LazyBot
     def find_files(*paths, ignore_error: true) # :yield: path
       block_given? or return enum_for(__method__, *paths, ignore_error:)
 
-      fs_encoding = Encoding.find("filesystem")
+      fs_encoding = Encoding.find('filesystem')
 
       paths.collect! do |d|
         raise Errno::ENOENT, d unless File.exist?(d)

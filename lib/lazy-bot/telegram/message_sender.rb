@@ -6,34 +6,24 @@ module LazyBot
 
     attr_reader :chat_id, :context, :action_response
 
-    def initialize(context, params)
+    def initialize(context, action_response)
       @context = context
-      @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id || context.chat_id
-      @action_response = build_action_response(params)
+      @action_response = action_response
     end
 
-    # def initialize(params)
-    #   @bot = params[:bot]
-    #   @chat = params[:chat]
-    #   @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id
-    #   @action_response = build_action_response(params)
-    #   @message = params[:message]
-    # end
-
     def_delegators :@action_response, :text, :photo, :document, :parse_mode, :keyboard, :inline
-    def_delegators :@context, :bot, :chat, :message
+    def_delegators :@context, :chat_id, :bot, :chat, :message
 
     def send
-      begin
-        MyLogger.debug "sending '#{text}' to #{chat&.username || chat_id} (#{chat_id})"
-        delete_previous_message if action_response.delete && message.present?
+      MyLogger.debug "sending '#{text}' to #{chat&.username || chat_id} (#{chat_id})"
+      delete_previous_message if action_response.delete && message.present?
 
-        send_with_params
-      rescue StandardError => e
-        MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
-        raise e if ENV['BOT_ENV'] != 'production'
-        nil
-      end
+      send_with_params
+    rescue StandardError => e
+      MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
+      raise e if ENV['BOT_ENV'] != 'production'
+
+      nil
     end
 
     # only for callbacks
@@ -43,24 +33,18 @@ module LazyBot
           chat_id:,
           message_id: message.message_id,
           parse_mode:,
-          text:,
+          text:
         }
-        if action_response.inline
-          args[:reply_markup] = action_response.reply_markup
-        end
+        args[:reply_markup] = action_response.reply_markup if action_response.inline
 
         args.merge!(action_response.opts) if action_response.opts.present?
 
-        if skip_parse_mode
-          args[:parse_mode] = nil
-        end
+        args[:parse_mode] = nil if skip_parse_mode
 
         bot.api.edit_message_text(**args)
-        
       rescue StandardError => e
-        if e.message.include?('can\'t parse entities')
-          return edit(skip_parse_mode: true)
-        end
+        return edit(skip_parse_mode: true) if e.message.include?('can\'t parse entities')
+
         MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
         return false
       end
@@ -74,7 +58,7 @@ module LazyBot
       args = {
         chat_id:,
         reply_markup: action_response.reply_markup,
-        parse_mode:,
+        parse_mode:
       }
 
       if message.respond_to?(:message_thread_id) && message.message_thread_id
@@ -101,8 +85,8 @@ module LazyBot
 
     def send_photo_with_caption(args)
       final_photo = photo.is_a?(Array) && photo.length == 1 ? photo.first : photo
-      photo_type = (final_photo.is_a?(String) && final_photo.end_with?('.png')) ? 'image/png' : 'image/jpeg'
-      photo_content = build_upload(final_photo, type: action_response.mime ||  photo_type) 
+      photo_type = final_photo.is_a?(String) && final_photo.end_with?('.png') ? 'image/png' : 'image/jpeg'
+      photo_content = build_upload(final_photo, type: action_response.mime || photo_type)
       args.merge!({ photo: photo_content })
 
       bot.api.send_photo(**args)
@@ -112,7 +96,7 @@ module LazyBot
       media_group = photo.each_with_index.map do |photo, _index|
         {
           type: 'photo',
-          media: photo,
+          media: photo
         }
       end
 
@@ -123,10 +107,9 @@ module LazyBot
 
     def send_document_with_caption(args)
       document_data = {
-        document: build_upload(document, type: action_response.mime ||  'image/jpeg'),
+        document: build_upload(document, type: action_response.mime || 'image/jpeg')
       }
       args.merge!(document_data)
-
 
       bot.api.send_document(**args)
     end
@@ -138,9 +121,7 @@ module LazyBot
         bot.api.send_message(**args)
       end
     rescue StandardError => e
-      if e.message.include?('can\'t parse entities')
-        return send_text(**args.merge(parse_mode: nil))
-      end
+      send_text(**args.merge(parse_mode: nil)) if e.message.include?('can\'t parse entities')
     end
 
     def send_in_chunks(args, chunk_size = 4000)
@@ -149,16 +130,16 @@ module LazyBot
       end
     end
 
-    def build_action_response(params)
-      obj = params[:action_response]
-      if obj.is_a?(Hash)
-        ActionResponse.new(obj)
-      elsif obj.respond_to?(:text)
-        obj
-      else
-        raise ArgumentError
-      end
-    end
+    # def build_action_response(params)
+    #   obj = params[:action_response]
+    #   if obj.is_a?(Hash)
+    #     ActionResponse.new(obj)
+    #   elsif obj.respond_to?(:text)
+    #     obj
+    #   else
+    #     raise ArgumentError
+    #   end
+    # end
 
     def build_upload(file_or_url, type)
       if file_or_url.is_a?(String) && file_or_url.start_with?('http')
@@ -170,7 +151,7 @@ module LazyBot
 
     def delete_previous_message
       @bot.api.delete_message(chat_id: chat_id, message_id: message.message_id)
-    rescue StandardError => e
+    rescue StandardError
       MyLogger.error "Cant delete #{message.message_id}, with new text: #{action_response.text}"
     end
   end

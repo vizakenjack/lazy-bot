@@ -7,6 +7,7 @@ module LazyBot
     attr_accessor :logger
 
     DEFAULT_LOGGER_LEVEL = Logger::INFO
+    DEVELOPMENT_ENVS = DEVELOPMENT_ENVS.freeze
 
     def initialize(logger_name = 'bot.log')
       @logger = Logger.new("./log/#{logger_name}").tap do |obj|
@@ -36,7 +37,7 @@ module LazyBot
     end
 
     def self.error(text = nil)
-      puts "Got error: #{text}" if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+      puts "Got error: #{text}" if DEVELOPMENT_ENVS.include?(ENV['BOT_ENV'])
       find_or_init('error.log').tap { |log| log.error(text) if text }
     end
 
@@ -45,28 +46,28 @@ module LazyBot
     end
 
     def debug(text, user: nil)
-      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
-      
+      puts(text) if DEVELOPMENT_ENVS.include?(ENV['BOT_ENV'])
+
       message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.debug(message)
     end
 
     def info(text, user: nil)
-      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+      puts(text) if DEVELOPMENT_ENVS.include?(ENV['BOT_ENV'])
 
       message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.info(message)
     end
 
     def error(text, user: nil)
-      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+      puts(text) if DEVELOPMENT_ENVS.include?(ENV['BOT_ENV'])
 
       message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.error(message)
     end
 
     def warn(text, user: nil)
-      puts(text) if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+      puts(text) if DEVELOPMENT_ENVS.include?(ENV['BOT_ENV'])
 
       message = "User id=#{user.id} name=#{user.name}: #{text}" if user
       @logger.warn(message)

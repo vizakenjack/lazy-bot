@@ -81,11 +81,16 @@ module LazyBot
     end
 
     def as_json(chat_id:)
-      {
+      data = {
         method: 'sendMessage',
         chat_id:,
         text: text,
+        **opts
       }
+
+      data[:reply_markup] = reply_markup if inline
+      data[:parse_mode] = parse_mode if parse_mode
+      data
     end
   end
 end
