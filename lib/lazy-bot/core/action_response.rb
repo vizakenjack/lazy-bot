@@ -82,48 +82,5 @@ module LazyBot
         ReplyMarkupFormatter.new(keyboard).build_markup
       end
     end
-
-    def as_json(context:)
-      puts "Params for as_json: #{@params}"
-      message = context.message
-
-      if notice
-        return {
-          method: make_method,
-          callback_query_id: message.id,
-          text: notice,
-          show_alert: alert
-        }
-      end
-
-      data = {
-        method: make_method,
-        chat_id: context.chat_id,
-        text: text,
-        **opts
-      }
-
-      data[:message_id] = context.message_id if edit_inline || clear_inline || edit
-
-      if message.respond_to?(:message_thread_id) && message.message_thread_id
-        data[:reply_to_message_id] = message.message_thread_id
-      end
-
-      data[:reply_markup] = reply_markup if inline
-      data[:parse_mode] = parse_mode if parse_mode
-      data
-    end
-
-    def make_method
-      if edit_inline || clear_inline
-        'editMessageReplyMarkup'
-      elsif edit
-        'editMessageText'
-      elsif notice
-        'answerCallbackQuery'
-      else
-        'sendMessage'
-      end
-    end
   end
 end

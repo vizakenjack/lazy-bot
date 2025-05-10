@@ -99,7 +99,7 @@ module LazyBot
       end
     end
 
-    def handle_sync(_responder, matched_action)
+    def handle_sync(responder, matched_action)
       action_response = matched_action.to_output
 
       puts "action_response2 = #{action_response}"
