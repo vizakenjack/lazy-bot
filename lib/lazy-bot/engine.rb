@@ -106,6 +106,7 @@ module LazyBot
       action_response = matched_action.to_output
 
       puts "action_response = #{action_response}"
+      puts "message.chat_id = #{message.chat_id.inspect}"
       return {
         method: 'sendMessage',
         chat_id: message.chat_id,
