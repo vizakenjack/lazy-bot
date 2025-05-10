@@ -89,8 +89,8 @@ module LazyBot
       end
 
       if matched_action.webhook_response?
-        responder = WebhookResponder.new(context, matched_action.to_output)
-        responder.execute
+        handle_sync(matched_action)
+
       else
         puts 'Handle async'
         handle_async(responder, matched_action)
@@ -99,28 +99,29 @@ module LazyBot
       end
     end
 
-    def handle_sync(responder, matched_action)
-      action_response = matched_action.to_output
+    def handle_sync(matched_action)
+      responder = WebhookResponder.new(context, matched_action.to_output)
 
-      puts "action_response2 = #{action_response}"
-      puts "message = #{matched_action.message.inspect}"
-      puts "message.chat_id = #{matched_action.message.chat_id.inspect}"
-      # return {
-      #   method: 'sendMessage',
-      #   chat_id: message.chat_id,
-      #   text: 'Success new!!!',
-      # }
-      # Async do
-      #   if (after_finish_action = matched_action.after_finish)
-      #     sleep 10
-      #     args.merge!(action_response: after_finish_action)
-      #     responder.new(**args).send
-      #   end
-      # end
+      actions = responder.build_actions
+      last_action = actions.pop
 
-      x = action_response.as_json(context: matched_action.context)
-      puts "x =#{x}"
-      x
+      if actions.any?
+        Async do
+          actions.each do |action|
+            puts "ASYNC: executing #{action}"
+            bot.api.call(action[:method], action)
+          end
+        end
+      end
+
+      Async do
+        if (after_finish_action = matched_action.after_finish)
+          sleep 1
+          MessageSender.new(context, after_finish_action).send
+        end
+      end
+
+      last_action
     end
 
     def handle_async(responder, matched_action)

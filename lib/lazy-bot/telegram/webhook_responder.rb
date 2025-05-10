@@ -16,6 +16,8 @@ module LazyBot
       actions = []
 
       puts "message.callback? = #{message.callback?}"
+      puts "action_response.notice  = #{action_response.notice}"
+      puts "action_response.alert = #{action_response.alert}"
 
       if message.callback?
         actions << answer_callback_query_action
@@ -56,22 +58,6 @@ module LazyBot
       actions
     end
 
-    def execute
-      actions = build_actions
-      last_action = actions.pop
-
-      if actions.any?
-        Async do
-          actions.each do |action|
-            puts "ASYNC: executing #{action}"
-            bot.api.call(action[:method], action)
-          end
-        end
-      end
-
-      last_action
-    end
-
     private
 
     def make_method
@@ -108,9 +94,6 @@ module LazyBot
         method: 'answerCallbackQuery',
         callback_query_id: message.id,
       }
-
-      puts "action_response.notice  = #{action_response.notice}"
-      puts "action_response.alert = #{action_response.alert}"
 
       if action_response.notice
         action[:text] = action_response.notice
