@@ -115,7 +115,7 @@ module LazyBot
         if (after_finish_action = matched_action.after_finish)
           sleep 1
 
-          action = WebhookResponder.new(matched_action.context, after_finish_action).build_actions.first
+          action = WebhookResponder.new(matched_action.context, after_finish_action).build_actions.last
           puts "after_finish_action = #{action.inspect}"
           bot.api.call(action[:method], action)
         end
