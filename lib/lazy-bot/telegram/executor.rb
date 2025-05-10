@@ -75,7 +75,7 @@ module LazyBot
       method = action.delete(:method)
       case method
       when 'sendMessage'
-        send_text(args)
+        send_text(action)
       when 'editMessageText'
         bot.api.edit_message_text(**action)
       when 'deleteMessage'
