@@ -1,0 +1,4 @@
+require: []
+
+Rails:
+  Enabled: false

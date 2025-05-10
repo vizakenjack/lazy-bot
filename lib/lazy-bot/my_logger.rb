@@ -36,6 +36,7 @@ module LazyBot
     end
 
     def self.error(text = nil)
+      puts "Got error: #{text}" if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
       find_or_init('error.log').tap { |log| log.error(text) if text }
     end
 

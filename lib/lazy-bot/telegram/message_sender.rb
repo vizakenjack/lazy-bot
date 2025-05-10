@@ -4,18 +4,24 @@ module LazyBot
   class MessageSender
     extend Forwardable
 
-    attr_reader :bot, :chat, :chat_id, :action_response, :message
+    attr_reader :chat_id, :context, :action_response
 
-    def initialize(params)
-      @bot = params[:bot]
-      @chat = params[:chat]
-      # todo: remove params[:id]
-      @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id
+    def initialize(context, params)
+      @context = context
+      @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id || context.chat_id
       @action_response = build_action_response(params)
-      @message = params[:message]
     end
 
+    # def initialize(params)
+    #   @bot = params[:bot]
+    #   @chat = params[:chat]
+    #   @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id
+    #   @action_response = build_action_response(params)
+    #   @message = params[:message]
+    # end
+
     def_delegators :@action_response, :text, :photo, :document, :parse_mode, :keyboard, :inline
+    def_delegators :@context, :bot, :chat, :message
 
     def send
       begin

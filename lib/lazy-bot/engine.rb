@@ -62,33 +62,30 @@ module LazyBot
 
       return false if decorated_message.unsupported?
 
-      repo = @config.repo_class.new(config:, bot:, message: decorated_message)
+      context = Context.new(bot:, config:, message:)
 
       if decorated_message.supported?
-        handle_message(repo)
+        handle_message(context)
       else
         handle_unknown_message(message)
       end
     end
 
-    def handle_message(repo)
-      message = repo.message
+    def handle_message(context)
+      message = context.message
       text = message.try(:text) || message.try(:data)
       MyLogger.warn("Received message: #{text}")
 
-      matched_action = find_matched_action(repo)
+      matched_action = find_matched_action(context)
       if matched_action.nil?
         puts "Cant find matched action for #{text}" if DEVELOPMENT
         return
       end
 
-      chat = message.message_chat
       responder = find_responder(message)
-      args = { bot: repo.bot, chat:, message: }
 
       if (before_finish_action = matched_action.before_finish)
-        args.merge!(action_response: before_finish_action)
-        responder.new(**args).send
+        responder.new(context, action_response: before_finish_action).send
       end
 
       if matched_action.webhook_response?
@@ -105,14 +102,14 @@ module LazyBot
     def handle_sync(responder, matched_action)
       action_response = matched_action.to_output
 
-      puts "action_response = #{action_response}"
+      puts "action_response2 = #{action_response}"
+      puts "message = #{message.inspect}"
       puts "message.chat_id = #{message.chat_id.inspect}"
-      return {
-        method: 'sendMessage',
-        chat_id: message.chat_id,
-        text: 'Success new!!!',
-      }
-
+      # return {
+      #   method: 'sendMessage',
+      #   chat_id: message.chat_id,
+      #   text: 'Success new!!!',
+      # }
       # Async do
       #   if (after_finish_action = matched_action.after_finish)
       #     sleep 10
@@ -179,13 +176,13 @@ module LazyBot
       @actions.sort_by! { |e| -e::PRIORITY }
     end
 
-    def find_matched_action(repo)
-      message = repo.message
+    def find_matched_action(context)
+      message = context.message
       start_actions = []
       finish_actions = []
 
       @actions.each do |action_class|
-        action = action_class.new(repo)
+        action = action_class.new(context)
 
         result = false
         if message.in_group?

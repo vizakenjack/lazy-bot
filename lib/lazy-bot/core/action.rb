@@ -5,11 +5,12 @@ module LazyBot
     extend Forwardable
     PRIORITY = 0
 
-    attr_reader :repo, :text
+    attr_reader :context, :repo, :text
 
-    def initialize(repo, text: nil)
-      @repo = repo
-      @text = text || @repo.message.content
+    def initialize(context, text: nil)
+      @context = context
+      @repo = context.build_repo
+      @text = text || @context.message.content
     end
 
     def_delegators :@repo, :api, :user, :bot, :message, :config
@@ -17,7 +18,7 @@ module LazyBot
     alias callback text
 
     def self.from_action(action, text: nil)
-      new(action.repo, text: text)
+      new(action.context, text: text)
     end
 
     def start_condition
