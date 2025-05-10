@@ -105,6 +105,8 @@ module LazyBot
     def handle_sync(responder, matched_action)
       action_response = matched_action.to_output
 
+      puts "action_response = #{action_response}"
+
       Async do
         if (after_finish_action = matched_action.after_finish)
           sleep 10
@@ -113,7 +115,9 @@ module LazyBot
         end
       end
 
-      action_response.as_json(chat_id: message.chat_id)
+      x =  action_response.as_json(chat_id: message.chat_id)
+      puts "x =#{x}"
+      x
     end
 
     def handle_async(responder, matched_action)
