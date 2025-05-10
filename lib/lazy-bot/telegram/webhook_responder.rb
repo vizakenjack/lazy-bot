@@ -65,10 +65,8 @@ module LazyBot
 
       if actions.any?
         Async do
-          puts "After 5, executing actions"
-          sleep 5
           actions.each do |action|
-            puts "Executing #{action}"
+            puts "ASYNC: executing #{action}"
             bot.api.call(action[:method], action)
           end
         end
