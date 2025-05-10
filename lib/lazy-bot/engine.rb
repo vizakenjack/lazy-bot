@@ -114,7 +114,7 @@ module LazyBot
       Async do
         if (after_finish_action = matched_action.after_finish)
           sleep 1
-          MessageSender.new(context, after_finish_action).send
+          MessageSender.new(matched_action.context, after_finish_action).send
         end
       end
 
