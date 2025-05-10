@@ -130,17 +130,6 @@ module LazyBot
       end
     end
 
-    # def build_action_response(params)
-    #   obj = params[:action_response]
-    #   if obj.is_a?(Hash)
-    #     ActionResponse.new(obj)
-    #   elsif obj.respond_to?(:text)
-    #     obj
-    #   else
-    #     raise ArgumentError
-    #   end
-    # end
-
     def build_upload(file_or_url, type)
       if file_or_url.is_a?(String) && file_or_url.start_with?('http')
         file_or_url

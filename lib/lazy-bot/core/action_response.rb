@@ -86,21 +86,28 @@ module LazyBot
     def as_json(context:)
       puts "Params for as_json: #{@params}"
 
-      is_edit = edit || edit_inline
-      method = is_edit ? 'editMessageText' : 'sendMessage'
-
       data = {
-        method:,
+        method: make_method,
         chat_id: context.chat_id,
         text: text,
         **opts
       }
 
-      data[:message_id] = context.message_id if is_edit
+      data[:message_id] = context.message_id if edit_inline || clear_inline || edit
 
       data[:reply_markup] = reply_markup if inline
       data[:parse_mode] = parse_mode if parse_mode
       data
+    end
+
+    def make_method
+      if edit_inline || clear_inline
+        'editMessageReplyMarkup'
+      elsif edit
+        'editMessageText'
+      else
+        'sendMessage'
+      end
     end
   end
 end
