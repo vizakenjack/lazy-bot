@@ -17,7 +17,6 @@ module LazyBot
 
     def send
       delete_previous_message if action_response.present? && action_response.delete && message.present?
-
       clear_inline_markup if action_response.clear_inline
 
       if text
@@ -75,7 +74,7 @@ module LazyBot
       args = {
         chat_id: message.chat.id,
         message_id: message.message_id,
-        reply_markup: Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: [])
+        reply_markup: Telegram::Bot::Types::InlineKeyboardMarkup.new(inline_keyboard: []),
       }
 
       bot.api.edit_message_reply_markup(**args)
@@ -87,7 +86,7 @@ module LazyBot
       args = {
         chat_id: message.chat.id,
         message_id: message.message_id,
-        reply_markup: action_response.reply_markup
+        reply_markup: action_response.reply_markup,
       }
       bot.api.edit_message_reply_markup(**args)
     rescue StandardError
