@@ -118,7 +118,7 @@ module LazyBot
       #   end
       # end
 
-      x =  action_response.as_json(chat_id: matched_action.message.chat_id)
+      x = action_response.as_json(chat_id: matched_action.message.chat_id)
       puts "x =#{x}"
       x
     end

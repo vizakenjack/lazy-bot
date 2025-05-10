@@ -3,3 +3,6 @@ require:
 
 Rails/Delegate:
   Enabled: false
+
+Rails/Output:
+  Enabled: false
