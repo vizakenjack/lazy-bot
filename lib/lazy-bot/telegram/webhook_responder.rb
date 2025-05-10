@@ -108,9 +108,12 @@ module LazyBot
         method: 'sendMessage',
         chat_id: context.chat_id,
         text: action_response.text,
-        parse_mode: action_response.parse_mode,
         **action_response.opts,
       }
+
+      if action_response.parse_mode
+        base_params[:parse_mode] = action_response.parse_mode
+      end
 
       if action_response.reply_markup
         base_params[:reply_markup] = action_response.reply_markup
@@ -129,9 +132,12 @@ module LazyBot
         chat_id: context.chat_id,
         message_id: message.message_id,
         text: action_response.text,
-        parse_mode: action_response.parse_mode,
         **action_response.opts,
       }
+
+      if action_response.parse_mode
+        base_params[:parse_mode] = action_response.parse_mode
+      end
 
       if action_response.inline
         base_params[:reply_markup] = action_response.reply_markup
@@ -148,9 +154,12 @@ module LazyBot
         chat_id: context.chat_id,
         photo: final_photo,
         caption: action_response.text,
-        parse_mode: action_response.parse_mode,
         **action_response.opts,
       }
+
+      if action_response.parse_mode
+        base_params[:parse_mode] = action_response.parse_mode
+      end
 
       if action_response.reply_markup
         base_params[:reply_markup] = action_response.reply_markup
@@ -181,10 +190,11 @@ module LazyBot
         chat_id: context.chat_id,
         document: action_response.document,
         caption: action_response.text,
-        parse_mode: action_response.parse_mode,
         reply_markup: action_response.reply_markup,
         **action_response.opts,
-      }
+      }.tap do |val|
+        val[:parse_mode] = action_response.parse_mode if action_response.parse_mode
+      end
     end
 
     def edit_inline_markup_action
