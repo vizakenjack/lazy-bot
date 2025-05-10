@@ -7,7 +7,7 @@ module LazyBot
     attr_accessor :logger
 
     DEFAULT_LOGGER_LEVEL = Logger::INFO
-    DEVELOPMENT_ENVS = DEVELOPMENT_ENVS.freeze
+    DEVELOPMENT_ENVS = %w[staging development].freeze
 
     def initialize(logger_name = 'bot.log')
       @logger = Logger.new("./log/#{logger_name}").tap do |obj|
