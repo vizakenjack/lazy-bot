@@ -15,6 +15,8 @@ module LazyBot
     def build_actions
       actions = []
 
+      puts "message.callback? = #{message.callback?}"
+
       if message.callback?
         actions << answer_callback_query_action
       end
@@ -27,11 +29,6 @@ module LazyBot
       # Handle clearing inline markup
       if action_response.clear_inline
         actions << clear_inline_markup_action
-      end
-
-      # Handle callback query answer if needed
-      if message.respond_to?(:id) && (action_response.notice || action_response.edit || action_response.text)
-        actions << answer_callback_query_action
       end
 
       # Handle inline markup updates
@@ -111,6 +108,9 @@ module LazyBot
         method: 'answerCallbackQuery',
         callback_query_id: message.id,
       }
+
+      puts "action_response.notice  = #{action_response.notice}"
+      puts "action_response.alert = #{action_response.alert}"
 
       if action_response.notice
         action[:text] = action_response.notice
