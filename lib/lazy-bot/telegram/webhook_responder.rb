@@ -2,6 +2,7 @@
 
 module LazyBot
   class WebhookResponder
+    extend Forwardable
     attr_reader :context, :action_response
 
     def initialize(context, action_response)
