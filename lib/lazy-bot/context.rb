@@ -20,5 +20,9 @@ module LazyBot
     def chat
       @message.message_chat
     end
+
+    def message_id
+      @message.id
+    end
   end
 end
