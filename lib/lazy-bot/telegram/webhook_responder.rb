@@ -74,8 +74,6 @@ module LazyBot
         end
       end
 
-      puts "Executing #{action}"
-
       last_action
     end
 
