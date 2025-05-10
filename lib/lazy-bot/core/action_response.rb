@@ -81,8 +81,10 @@ module LazyBot
     end
 
     def as_json(chat_id:)
+      method = edit || edit_inline ? 'editMessage' : 'sendMessage'
+
       data = {
-        method: 'sendMessage',
+        method:,
         chat_id:,
         text: text,
         **opts
