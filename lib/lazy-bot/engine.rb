@@ -118,6 +118,8 @@ module LazyBot
         end
       end
 
+      puts "last_action = #{last_action.inspect}"
+
       last_action
     end
 
