@@ -81,7 +81,10 @@ module LazyBot
     end
 
     def as_json(chat_id:)
-      method = edit || edit_inline ? 'editMessage' : 'sendMessage'
+      puts "Params for as_json: #{params}"
+
+      is_edit = edit || edit_inline
+      method = is_edit ? 'editMessage' : 'sendMessage'
 
       data = {
         method:,
@@ -89,6 +92,8 @@ module LazyBot
         text: text,
         **opts
       }
+
+      data[:message_id] = message.message_id if is_edit
 
       data[:reply_markup] = reply_markup if inline
       data[:parse_mode] = parse_mode if parse_mode
