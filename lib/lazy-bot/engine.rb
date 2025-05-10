@@ -88,7 +88,7 @@ module LazyBot
       end
 
       if matched_action.webhook_response?
-        responder = WebhookResponder.new(context, matched_action.to_output)
+        responder = Executor.new(context, matched_action.to_output)
         handle_sync(responder, matched_action)
       else
         handle_async(responder, matched_action)
@@ -103,17 +103,13 @@ module LazyBot
 
       if actions.any?
         Async do
-          actions.each do |action|
-            puts "ASYNC: executing #{action}"
-            bot.api.call(action[:method], action)
-          end
+          responder.execute(action)
         end
       end
 
       Async do
         if (after_finish_action = matched_action.after_finish)
-          action = WebhookResponder.new(matched_action.context, after_finish_action).build_actions.last
-          bot.api.call(action[:method], action)
+          Executor.new(matched_action.context, after_finish_action, ignore_callback: true).execute
         end
       end
 
