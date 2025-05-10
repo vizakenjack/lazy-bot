@@ -89,8 +89,8 @@ module LazyBot
       end
 
       if matched_action.webhook_response?
-        puts 'Handle sync'
-        handle_sync(responder, matched_action)
+        responder = WebhookResponder.new(context, matched_action.to_output)
+        responder.execute
       else
         puts 'Handle async'
         handle_async(responder, matched_action)

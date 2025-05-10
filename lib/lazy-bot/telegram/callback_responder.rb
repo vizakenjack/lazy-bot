@@ -34,7 +34,7 @@ module LazyBot
         puts "No action found for callback: #{callback.data}"
       end
 
-      return unless action_response.inline && action_response.text.blank?
+      return if !action_response.inline || action_response.text.present?
 
       edit_inline_markup
     end

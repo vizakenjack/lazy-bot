@@ -75,6 +75,10 @@ module LazyBot
       text.present? || notice.present? || photo.present? || inline.present? || document.present? || audio.present? || delete
     end
 
+    def to_s
+      "#{@params}"
+    end
+
     def reply_markup
       if inline
         ReplyMarkupFormatter.new(inline).build_inline_markup
