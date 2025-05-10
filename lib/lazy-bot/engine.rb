@@ -107,13 +107,13 @@ module LazyBot
 
       puts "action_response = #{action_response}"
 
-      Async do
-        if (after_finish_action = matched_action.after_finish)
-          sleep 10
-          args.merge!(action_response: after_finish_action)
-          responder.new(**args).send
-        end
-      end
+      # Async do
+      #   if (after_finish_action = matched_action.after_finish)
+      #     sleep 10
+      #     args.merge!(action_response: after_finish_action)
+      #     responder.new(**args).send
+      #   end
+      # end
 
       x =  action_response.as_json(chat_id: message.chat_id)
       puts "x =#{x}"
