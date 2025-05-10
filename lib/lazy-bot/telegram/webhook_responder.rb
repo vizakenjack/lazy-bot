@@ -10,7 +10,7 @@ module LazyBot
       @action_response = action_response
     end
 
-    def_delegators :@context, :chat, :message
+    def_delegators :@context, :bot, :chat, :message
 
     def build_actions
       actions = []
@@ -69,7 +69,7 @@ module LazyBot
           sleep 5
           actions.each do |action|
             puts "Executing #{action}"
-            context.bot.call(action[:method], action)
+            bot.api.call(action[:method], action)
           end
         end
       end
