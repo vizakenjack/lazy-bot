@@ -21,9 +21,17 @@ module LazyBot
       if inline_query?
         nil
       elsif callback?
-        message.respond_to?(:chat) ?  message.chat : nil
+        message.respond_to?(:chat) ? message.chat : nil
       else
         chat
+      end
+    end
+
+    def message_id
+      if callback?
+        message.message.id
+      else
+        message.message_id
       end
     end
 
@@ -53,7 +61,7 @@ module LazyBot
     end
 
     def in_group?
-      respond_to?(:chat) && (chat&.type == 'group' || chat&.type == 'supergroup')
+      respond_to?(:chat) && %w[group supergroup].include?(chat&.type)
     end
 
     def in_channel?
@@ -104,7 +112,7 @@ module LazyBot
     end
 
     def supported?
-      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member? || inline_query? || video? || audio?
+      callback? || text_message? || document? || voice? || photo? || new_chat_members? || left_chat_member? || inline_query? || video? || audio?
     end
 
     def unsupported?

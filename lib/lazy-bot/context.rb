@@ -22,7 +22,7 @@ module LazyBot
     end
 
     def message_id
-      @message.id
+      @message.message.id
     end
   end
 end
