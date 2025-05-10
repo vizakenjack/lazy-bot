@@ -15,14 +15,10 @@ module LazyBot
       config.repo_class.new(config:, bot:, message:)
     end
 
-    def_delegators :@message, :chat_id
+    def_delegators :@message, :chat_id, :message_id
 
     def chat
       @message.message_chat
-    end
-
-    def message_id
-      @message.message.id
     end
   end
 end
