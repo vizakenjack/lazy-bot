@@ -65,7 +65,7 @@ module LazyBot
       actions ||= build_actions
 
       if actions.is_a?(Array)
-        actions.each(&:run_action)
+        actions.each { run_action(it) }
       else
         run_action(action)
       end
