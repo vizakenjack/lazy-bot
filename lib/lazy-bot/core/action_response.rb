@@ -82,6 +82,10 @@ module LazyBot
       "#{@params}"
     end
 
+    def parse_mode
+      opts[:parse_mode]
+    end
+
     def reply_markup
       if inline
         ReplyMarkupFormatter.new(inline).build_inline_markup
