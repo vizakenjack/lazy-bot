@@ -103,8 +103,8 @@ module LazyBot
       action_response = matched_action.to_output
 
       puts "action_response2 = #{action_response}"
-      puts "message = #{message.inspect}"
-      puts "message.chat_id = #{message.chat_id.inspect}"
+      puts "message = #{matched_action.message.inspect}"
+      puts "message.chat_id = #{matched_action.message.chat_id.inspect}"
       # return {
       #   method: 'sendMessage',
       #   chat_id: message.chat_id,
@@ -118,7 +118,7 @@ module LazyBot
       #   end
       # end
 
-      x =  action_response.as_json(chat_id: message.chat_id)
+      x =  action_response.as_json(chat_id: matched_action.message.chat_id)
       puts "x =#{x}"
       x
     end
