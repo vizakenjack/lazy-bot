@@ -5,9 +5,9 @@ module LazyBot
     extend Forwardable
     attr_reader :bot, :message, :config, :repo
 
-    def initialize(bot:, message:, config:)
+    def initialize(bot:, message: nil, decorated_message: nil, config:)
       @bot = bot
-      @message = message # already decorated
+      @message = decorated_message || DecoratedMessage.new(message, config)
       @config = config
     end
 

@@ -62,7 +62,7 @@ module LazyBot
 
       return false if decorated_message.unsupported?
 
-      context = Context.new(bot:, config:, message:)
+      context = Context.new(bot:, config:, decorated_message: decorated_message)
 
       if decorated_message.supported?
         handle_message(context)
