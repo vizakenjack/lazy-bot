@@ -57,7 +57,7 @@ module LazyBot
     end
 
     def respond_message(message)
-      puts "message = #{message.to_h}" if ['development', 'staging'].include?(ENV['BOT_ENV'])
+      puts "respond_message: #{message.to_h}" if ['development', 'staging'].include?(ENV['BOT_ENV'])
       decorated_message = DecoratedMessage.new(message, config)
 
       return false if decorated_message.unsupported?
@@ -92,8 +92,10 @@ module LazyBot
       end
 
       if matched_action.webhook_response?
+        puts "Handle sync"
         handle_sync(responder, matched_action)
       else
+        puts "Handle async"
         handle_async(responder, matched_action)
 
         ActionResponse.empty
