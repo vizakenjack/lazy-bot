@@ -111,7 +111,7 @@ module LazyBot
         end
       end
 
-      action_response.to_json(chat_id: message.chat_id)
+      action_response.as_json(chat_id: message.chat_id)
     end
 
     def handle_async(responder, matched_action)

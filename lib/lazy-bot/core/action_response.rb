@@ -80,10 +80,10 @@ module LazyBot
       end
     end
 
-    def to_json(chat_id:)
+    def as_json(chat_id:)
       {
         method: 'sendMessage',
-        chat:,
+        chat_id:,
         text: text,
       }
     end
