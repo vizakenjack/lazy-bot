@@ -39,28 +39,6 @@ module LazyBot
       end
     end
 
-    def start_threaded!
-      @bot.run do |bot|
-        bot.listen do |message|
-          Thread.new(message) do |message|
-            FiberScheduler do
-              Fiber.schedule do
-                respond_message(message)
-              end
-            end
-          end
-        rescue Telegram::Bot::Exceptions::ResponseError => e
-          raise e if ENV['BOT_ENV'] == 'development'
-
-          puts "Got telegram response error: #{e}"
-        rescue StandardError => e
-          MyLogger.error "message = #{e.message}"
-          MyLogger.error "backtrace = #{e.backtrace.join('\n')}"
-          raise if ENV['BOT_ENV'] == 'development'
-        end
-      end
-    end
-
     def process_webhook_request(params)
       update_id = params["update_id"]
 
@@ -79,12 +57,12 @@ module LazyBot
     end
 
     def respond_message(message)
-      puts "message = #{message.to_h}" if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
+      puts "message = #{message.to_h}" if ['development', 'staging'].include?(ENV['BOT_ENV'])
       decorated_message = DecoratedMessage.new(message, config)
 
       return false if decorated_message.unsupported?
 
-      repo = @config.repo_class.new(config:, bot: , message: decorated_message)
+      repo = @config.repo_class.new(config:, bot:, message: decorated_message)
 
       if decorated_message.supported?
         handle_message(repo)
@@ -103,7 +81,7 @@ module LazyBot
         puts "Cant find matched action for #{text}" if DEVELOPMENT
         return
       end
-      
+
       chat = message.message_chat
       responder = find_responder(message)
       args = { bot: repo.bot, chat:, message: }
@@ -113,21 +91,46 @@ module LazyBot
         responder.new(**args).send
       end
 
+      if matched_action.webhook_response?
+        handle_sync(responder, matched_action)
+      else
+        handle_async(responder, matched_action)
+
+        ActionResponse.empty
+      end
+    end
+
+    def handle_sync(responder, matched_action)
       action_response = matched_action.to_output
 
-      # if action_response is ActionResponse.empty its being skipped
-      if action_response.present?
-        args.merge!(action_response:)
-        responder.new(**args).send
-      elsif action_response.nil?
-        action_response = ActionResponse.text(I18n.t("errors.unknown_command"))
-        args.merge!({ action_response: })
-        responder.new(**args).send
+      Async do
+        if (after_finish_action = matched_action.after_finish)
+          sleep 10
+          args.merge!(action_response: after_finish_action)
+          responder.new(**args).send
+        end
       end
 
-      if (after_finish_action = matched_action.after_finish)
-        args.merge!(action_response: after_finish_action)
-        responder.new(**args).send
+      action_response.to_json(chat_id: message.chat_id)
+    end
+
+    def handle_async(responder, matched_action)
+      Async do
+        action_response = matched_action.to_output
+
+        if action_response.present?
+          args.merge!(action_response:)
+          responder.new(**args).send
+        elsif action_response.nil?
+          action_response = ActionResponse.text(I18n.t("errors.unknown_command"))
+          args.merge!({ action_response: })
+          responder.new(**args).send
+        end
+
+        if (after_finish_action = matched_action.after_finish)
+          args.merge!(action_response: after_finish_action)
+          responder.new(**args).send
+        end
       end
     end
 

@@ -2,13 +2,13 @@
 
 module LazyBot
   class ActionResponse
-    attr_accessor :text, :notice, :keyboard, :inline, :photo, :document, :audio, :mime, :parse_mode, :alert, :clear_inline, 
+    attr_accessor :text, :notice, :keyboard, :inline, :photo, :document, :audio, :mime, :parse_mode, :alert, :clear_inline,
                   :edit_inline, :edit, :delete, :opts
 
     def initialize(params)
       @text = params[:text]
       raise TypeError, 'text must be a string' if @text.present? && !text.is_a?(String)
-      
+
       @notice = params[:notice]
       @keyboard = params[:keyboard] || []
       @inline = params[:inline]
@@ -29,7 +29,7 @@ module LazyBot
       if json.is_a?(String)
         text(json)
       else
-        new(**json['action'].symbolize_keys, opts: {disable_web_page_preview: true})
+        new(**json['action'].symbolize_keys, opts: { disable_web_page_preview: true })
       end
     end
 
@@ -69,7 +69,7 @@ module LazyBot
     end
 
     def present?
-      text.present? || notice.present? || photo.present? || inline.present? || document.present?  || audio.present? || delete
+      text.present? || notice.present? || photo.present? || inline.present? || document.present? || audio.present? || delete
     end
 
     def reply_markup
@@ -78,6 +78,14 @@ module LazyBot
       elsif keyboard
         ReplyMarkupFormatter.new(keyboard).build_markup
       end
+    end
+
+    def to_json(chat_id:)
+      {
+        method: 'sendMessage',
+        chat:,
+        text: text,
+      }
     end
   end
 end

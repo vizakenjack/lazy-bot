@@ -19,7 +19,10 @@ module LazyBot
       default
     end
 
-    def safe_delete_message(chat_id:, message_id:)
+    def safe_delete_message(msg = nil, chat_id: nil, message_id: nil)
+      chat_id ||= msg.chat.id
+      message_id ||= msg.message_id
+    
       api.delete_message(chat_id:, message_id:)
     rescue StandardError
       puts("Cant delete message with id: #{message_id}")

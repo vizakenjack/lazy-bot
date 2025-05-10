@@ -8,6 +8,8 @@
 /tmp/
 /log/
 *.gem
+.solargraph.yml
+.ruby-version
 
 # rspec failure tracking
 .rspec_status
