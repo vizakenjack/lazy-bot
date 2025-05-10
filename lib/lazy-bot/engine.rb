@@ -106,6 +106,11 @@ module LazyBot
       action_response = matched_action.to_output
 
       puts "action_response = #{action_response}"
+      return {
+        method: 'sendMessage',
+        chat_id: message.chat_id,
+        text: 'Success new!!!',
+      }
 
       # Async do
       #   if (after_finish_action = matched_action.after_finish)
