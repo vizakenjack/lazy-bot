@@ -6,6 +6,9 @@ module LazyBot
                   :edit_inline, :edit, :delete, :opts
 
     def initialize(params)
+      # @temp
+      @params = params
+
       @text = params[:text]
       raise TypeError, 'text must be a string' if @text.present? && !text.is_a?(String)
 
@@ -81,7 +84,7 @@ module LazyBot
     end
 
     def as_json(chat_id:)
-      puts "Params for as_json: #{params}"
+      puts "Params for as_json: #{@params}"
 
       is_edit = edit || edit_inline
       method = is_edit ? 'editMessage' : 'sendMessage'
