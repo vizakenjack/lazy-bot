@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module LazyBot
   class InlineAction < Action
     def match_message?

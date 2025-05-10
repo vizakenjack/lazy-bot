@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module LazyBot
   class Config
     attr_reader :conf, :bot_username, :telegram_token, :actions_path, :repo_class

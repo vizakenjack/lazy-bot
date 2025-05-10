@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module LazyBot
   class ReplyMarkupFormatter
     attr_reader :data

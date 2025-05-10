@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module LazyBot
   class ActionResponse
     attr_accessor :text, :notice, :keyboard, :inline, :photo, :document, :audio, :mime, :alert, :clear_inline,

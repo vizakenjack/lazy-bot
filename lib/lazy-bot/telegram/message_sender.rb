@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module LazyBot
   class MessageSender
     extend Forwardable
@@ -33,7 +31,7 @@ module LazyBot
           chat_id:,
           message_id: message.message_id,
           parse_mode:,
-          text:
+          text:,
         }
         args[:reply_markup] = action_response.reply_markup if action_response.inline
 
@@ -58,7 +56,7 @@ module LazyBot
       args = {
         chat_id:,
         reply_markup: action_response.reply_markup,
-        parse_mode:
+        parse_mode:,
       }
 
       if message.respond_to?(:message_thread_id) && message.message_thread_id
@@ -96,7 +94,7 @@ module LazyBot
       media_group = photo.each_with_index.map do |photo, _index|
         {
           type: 'photo',
-          media: photo
+          media: photo,
         }
       end
 
@@ -107,7 +105,7 @@ module LazyBot
 
     def send_document_with_caption(args)
       document_data = {
-        document: build_upload(document, type: action_response.mime || 'image/jpeg')
+        document: build_upload(document, type: action_response.mime || 'image/jpeg'),
       }
       args.merge!(document_data)
 

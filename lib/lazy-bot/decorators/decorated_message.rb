@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module LazyBot
   class DecoratedMessage < SimpleDelegator
     def initialize(obj, config)
