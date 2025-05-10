@@ -103,7 +103,7 @@ module LazyBot
 
       if actions.any?
         Async do
-          responder.execute(action)
+          responder.execute(actions)
         end
       end
 
