@@ -90,8 +90,8 @@ module LazyBot
       if notice
         return {
           callback_query_id: message.id,
-          text: notice
-          show_alert: alert,
+          text: notice,
+          show_alert: alert
         }
       end
 
