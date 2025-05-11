@@ -74,6 +74,8 @@ module LazyBot
         bot.api.edit_message_reply_markup(**action)
       when 'sendPhoto'
         action[:photo] = build_upload(action[:photo], action_response.mime || 'image/jpeg')
+
+        puts "sendPhoto action = #{action.inspect}"
         bot.api.send_photo(**action)
       when 'sendMediaGroup'
         action[:media] = action[:media].map do |media_item|
