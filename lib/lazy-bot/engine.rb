@@ -84,11 +84,10 @@ module LazyBot
       responder = find_responder(message)
 
       if (before_finish_action = matched_action.before_finish)
-        responder.new(context, action_response: before_finish_action).send
+        responder.new(context, before_finish_action, ignore_callback: true).execute
       end
 
       if matched_action.webhook_response?
-        responder = Executor.new(context, matched_action.to_output)
         handle_sync(responder, matched_action)
       else
         handle_async(responder, matched_action)
@@ -98,12 +97,14 @@ module LazyBot
     end
 
     def handle_sync(responder, matched_action)
-      actions = responder.build_actions
+      action_response = matched_action.to_output
+      executor = responder.new(context, action_response)
+      actions = executor.build_actions
       last_action = actions.pop
 
       if actions.any?
         Async do
-          responder.execute(actions)
+          executor.execute(actions)
         end
       end
 
@@ -214,12 +215,10 @@ module LazyBot
     private
 
     def find_responder(message)
-      if message.callback?
-        CallbackResponder
-      elsif message.inline_query?
+      if message.inline_query?
         InlineResponder
       else
-        MessageSender
+        Executor
       end
     end
 

@@ -15,10 +15,6 @@ module LazyBot
     def build_actions
       actions = []
 
-      puts "message.callback? = #{message.callback?}"
-      puts "action_response.notice  = #{action_response.notice}"
-      puts "action_response.alert = #{action_response.alert}"
-
       if !@ignore_callback && message.callback?
         actions << answer_callback_query_action
         return actions if !action_response.present?
@@ -54,7 +50,13 @@ module LazyBot
         if action_response.edit
           actions << edit_text_action
         else
-          actions << send_text_action
+          text_actions = build_send_text_actions
+          actions += text_actions
+
+          # syncing long texts
+          if text_actions.length >= 2
+            actions << { method: 'empty' }
+          end
         end
       end
 
@@ -74,6 +76,8 @@ module LazyBot
     def run_action(action)
       method = action.delete(:method)
       case method
+      when 'empty'
+        # nothing
       when 'sendMessage'
         send_text(action)
       when 'editMessageText'
@@ -152,11 +156,21 @@ module LazyBot
       action
     end
 
-    def send_text_action
+    def build_send_text_actions
+      text = action_response.text
+      return [send_text_action(text)] if text.length < 4000
+
+      chunks = text.chars.each_slice(4000).map(&:join)
+      chunks.map do |chunk|
+        send_text_action(chunk)
+      end
+    end
+
+    def send_text_action(text)
       base_params = {
         method: 'sendMessage',
         chat_id: context.chat_id,
-        text: action_response.text,
+        text: text,
         **action_response.opts,
       }
 
