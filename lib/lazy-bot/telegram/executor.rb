@@ -73,6 +73,8 @@ module LazyBot
       when 'editMessageReplyMarkup'
         bot.api.edit_message_reply_markup(**action)
       when 'sendPhoto'
+        puts "when send photo!"
+
         action[:photo] = build_upload(action[:photo], action_response.mime || 'image/jpeg')
 
         puts "sendPhoto action = #{action.inspect}"
@@ -106,21 +108,21 @@ module LazyBot
       end
     end
 
-    def make_method
-      if action_response.edit_inline || action_response.clear_inline
-        'editMessageReplyMarkup'
-      elsif action_response.edit
-        'editMessageText'
-      elsif action_response.notice
-        'answerCallbackQuery'
-      elsif action_response.photo
-        action_response.photo.is_a?(Array) ? 'sendMediaGroup' : 'sendPhoto'
-      elsif action_response.document
-        'sendDocument'
-      else
-        'sendMessage'
-      end
-    end
+    # def make_method
+    #   if action_response.edit_inline || action_response.clear_inline
+    #     'editMessageReplyMarkup'
+    #   elsif action_response.edit
+    #     'editMessageText'
+    #   elsif action_response.notice
+    #     'answerCallbackQuery'
+    #   elsif action_response.photo
+    #     action_response.photo.is_a?(Array) ? 'sendMediaGroup' : 'sendPhoto'
+    #   elsif action_response.document
+    #     'sendDocument'
+    #   else
+    #     'sendMessage'
+    #   end
+    # end
 
     def delete_message_action
       {
