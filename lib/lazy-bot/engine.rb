@@ -124,14 +124,14 @@ module LazyBot
         action_response = matched_action.to_output
 
         if action_response.present?
-          responder.new(matched_action.context, action_response).send
+          responder.new(matched_action.context, action_response).execute
         elsif action_response.nil?
           action_response = ActionResponse.text(I18n.t('errors.unknown_command'))
-          responder.new(matched_action.context, action_response).send
+          responder.new(matched_action.context, action_response).execute
         end
 
         if (after_finish_action = matched_action.after_finish)
-          responder.new(matched_action.context, after_finish_action).send
+          responder.new(matched_action.context, after_finish_action, ignore_callback: true).execute
         end
       end
     end
