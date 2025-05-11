@@ -26,23 +26,29 @@ module LazyBot
       actions << clear_inline_markup_action if action_response.clear_inline
       actions << edit_inline_markup_action if action_response.inline && action_response.text.blank?
 
+      add_empty_line = false
+
       if action_response.photo
+        add_empty_line = true
         if action_response.photo.is_a?(Array) && action_response.photo.length > 1
           actions << send_media_group_action
         else
           actions << send_photo_action
         end
       elsif action_response.document
+        add_empty_line = true
         actions << send_document_action
       elsif action_response.text
         if action_response.edit
           actions << edit_text_action
         else
           text_actions = build_send_text_actions
-          actions.concat(text_actions)
-          actions << { method: 'empty' } if text_actions.length >= 2
+          actions += text_actions
+          add_empty_line = true if text_actions.length >= 2
         end
       end
+
+      actions << { method: 'empty' } if add_empty_line
 
       actions
     end
@@ -74,9 +80,6 @@ module LazyBot
       when 'editMessageReplyMarkup'
         bot.api.edit_message_reply_markup(**action)
       when 'sendPhoto'
-        puts "when send photo!"
-
-        puts "sendPhoto action = #{action.inspect}"
         bot.api.send_photo(**action)
       when 'sendMediaGroup'
         action[:media] = action[:media].map do |media_item|
@@ -106,22 +109,6 @@ module LazyBot
         Faraday::UploadIO.new(file_or_url, type)
       end
     end
-
-    # def make_method
-    #   if action_response.edit_inline || action_response.clear_inline
-    #     'editMessageReplyMarkup'
-    #   elsif action_response.edit
-    #     'editMessageText'
-    #   elsif action_response.notice
-    #     'answerCallbackQuery'
-    #   elsif action_response.photo
-    #     action_response.photo.is_a?(Array) ? 'sendMediaGroup' : 'sendPhoto'
-    #   elsif action_response.document
-    #     'sendDocument'
-    #   else
-    #     'sendMessage'
-    #   end
-    # end
 
     def delete_message_action
       {
