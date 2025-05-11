@@ -76,8 +76,6 @@ module LazyBot
       when 'sendPhoto'
         puts "when send photo!"
 
-        action[:photo] = build_upload(action[:photo], action_response.mime || 'image/jpeg')
-
         puts "sendPhoto action = #{action.inspect}"
         bot.api.send_photo(**action)
       when 'sendMediaGroup'
@@ -198,11 +196,12 @@ module LazyBot
     end
 
     def send_photo_action
-      final_photo = action_response.photo.is_a?(Array) ? action_response.photo.first : action_response.photo
+      photo = build_upload(action_response.photo, action_response.mime || 'image/jpeg')
+
       {
         method: 'sendPhoto',
         chat_id: context.chat_id,
-        photo: final_photo,
+        photo: photo,
         caption: action_response.text,
         **action_response.opts,
       }
@@ -225,10 +224,12 @@ module LazyBot
     end
 
     def send_document_action
+      document = build_upload(action_response.document, type: action_response.mime || 'image/jpeg')
+
       {
         method: 'sendDocument',
         chat_id: context.chat_id,
-        document: action_response.document,
+        document:,
         caption: action_response.text,
         **action_response.opts,
       }
