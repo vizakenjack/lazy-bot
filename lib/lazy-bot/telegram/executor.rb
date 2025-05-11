@@ -113,6 +113,10 @@ module LazyBot
         'editMessageText'
       elsif action_response.notice
         'answerCallbackQuery'
+      elsif action_response.photo
+        action_response.photo.is_a?(Array) ? 'sendMediaGroup' : 'sendPhoto'
+      elsif action_response.document
+        'sendDocument'
       else
         'sendMessage'
       end
