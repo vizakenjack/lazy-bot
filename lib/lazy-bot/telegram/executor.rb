@@ -58,6 +58,7 @@ module LazyBot
     end
 
     def run_action(action)
+      puts "run_action = #{action.inspect}"
       method = action.delete(:method)
       case method
       when 'empty'
