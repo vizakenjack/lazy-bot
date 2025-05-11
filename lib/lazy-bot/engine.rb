@@ -98,7 +98,7 @@ module LazyBot
 
     def handle_sync(responder, matched_action)
       action_response = matched_action.to_output
-      executor = responder.new(context, action_response)
+      executor = responder.new(matched_action.context, action_response)
       actions = executor.build_actions
       last_action = actions.pop
 
