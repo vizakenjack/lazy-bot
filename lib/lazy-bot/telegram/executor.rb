@@ -20,24 +20,12 @@ module LazyBot
         return actions if !action_response.present?
       end
 
-      return [] if !action_response.present?
+      return [] unless action_response.present?
 
-      # Handle deletion of previous message if needed
-      if action_response.present? && action_response.delete && message.present?
-        actions << delete_message_action
-      end
+      actions << delete_message_action if action_response.delete && message.present?
+      actions << clear_inline_markup_action if action_response.clear_inline
+      actions << edit_inline_markup_action if action_response.inline && action_response.text.blank?
 
-      # Handle clearing inline markup
-      if action_response.clear_inline
-        actions << clear_inline_markup_action
-      end
-
-      # Handle inline markup updates
-      if action_response.inline && action_response.text.blank?
-        actions << edit_inline_markup_action
-      end
-
-      # Handle primary action (text, photo, document, etc)
       if action_response.photo
         if action_response.photo.is_a?(Array) && action_response.photo.length > 1
           actions << send_media_group_action
@@ -51,12 +39,8 @@ module LazyBot
           actions << edit_text_action
         else
           text_actions = build_send_text_actions
-          actions += text_actions
-
-          # syncing long texts
-          if text_actions.length >= 2
-            actions << { method: 'empty' }
-          end
+          actions.concat(text_actions)
+          actions << { method: 'empty' } if text_actions.length >= 2
         end
       end
 
@@ -67,9 +51,9 @@ module LazyBot
       actions ||= build_actions
 
       if actions.is_a?(Array)
-        actions.each { run_action(it) }
+        actions.each { |it| run_action(it) }
       else
-        run_action(action)
+        run_action(actions)
       end
     end
 
@@ -89,18 +73,17 @@ module LazyBot
       when 'editMessageReplyMarkup'
         bot.api.edit_message_reply_markup(**action)
       when 'sendPhoto'
-        # Handle local file upload if needed
-        if action[:photo].is_a?(File) || action[:photo].is_a?(IO)
-          action[:photo] = Faraday::UploadIO.new(action[:photo], 'image/jpeg')
-        end
+        action[:photo] = build_upload(action[:photo], action_response.mime || 'image/jpeg')
         bot.api.send_photo(**action)
       when 'sendMediaGroup'
+        action[:media] = action[:media].map do |media_item|
+          media_item = media_item.dup
+          media_item[:media] = build_upload(media_item[:media], action_response.mime || 'image/jpeg')
+          media_item
+        end
         bot.api.send_media_group(**action)
       when 'sendDocument'
-        # Handle local file upload if needed
-        if action[:document].is_a?(File) || action[:document].is_a?(IO)
-          action[:document] = Faraday::UploadIO.new(action[:document], 'application/octet-stream')
-        end
+        action[:document] = build_upload(action[:document], action_response.mime || 'application/octet-stream')
         bot.api.send_document(**action)
       else
         MyLogger.warn "Unknown action method: #{method}"
@@ -112,6 +95,14 @@ module LazyBot
     end
 
     private
+
+    def build_upload(file_or_url, type)
+      if file_or_url.is_a?(String) && file_or_url.start_with?('http')
+        file_or_url
+      else
+        Faraday::UploadIO.new(file_or_url, type)
+      end
+    end
 
     def make_method
       if action_response.edit_inline || action_response.clear_inline
@@ -147,12 +138,10 @@ module LazyBot
         method: 'answerCallbackQuery',
         callback_query_id: message.id,
       }
-
       if action_response.notice
         action[:text] = action_response.notice
         action[:show_alert] = action_response.alert
       end
-
       action
     end
 
@@ -161,9 +150,7 @@ module LazyBot
       return [send_text_action(text)] if text.length < 4000
 
       chunks = text.chars.each_slice(4000).map(&:join)
-      chunks.map do |chunk|
-        send_text_action(chunk)
-      end
+      chunks.map { |chunk| send_text_action(chunk) }
     end
 
     def send_text_action(text)
@@ -203,20 +190,13 @@ module LazyBot
 
     def send_photo_action
       final_photo = action_response.photo.is_a?(Array) ? action_response.photo.first : action_response.photo
-
-      base_params = {
+      {
         method: 'sendPhoto',
         chat_id: context.chat_id,
         photo: final_photo,
         caption: action_response.text,
         **action_response.opts,
       }
-
-      if action_response.reply_markup
-        base_params[:reply_markup] = action_response.reply_markup
-      end
-
-      base_params
     end
 
     def send_media_group_action
@@ -241,7 +221,6 @@ module LazyBot
         chat_id: context.chat_id,
         document: action_response.document,
         caption: action_response.text,
-        reply_markup: action_response.reply_markup,
         **action_response.opts,
       }
     end
@@ -263,8 +242,7 @@ module LazyBot
         bot.api.send_message(**args)
       end
     rescue StandardError => e
-      if e.message.include?('can\'t parse entities')
-        # Remove parse_mode and retry
+      if e.message.include?("can't parse entities")
         args = args.merge(parse_mode: nil)
         bot.api.send_message(**args)
       else
