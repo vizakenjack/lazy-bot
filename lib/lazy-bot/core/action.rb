@@ -97,6 +97,10 @@ module LazyBot
       false
     end
 
+    def custom_match?
+      false
+    end
+
     def user_state
       user.opts.dig('state', config.bot_id.to_s) || ''
     end

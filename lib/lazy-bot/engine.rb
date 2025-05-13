@@ -179,6 +179,7 @@ module LazyBot
           next
         end
 
+        result ||= message.custom_match?
         result ||= message.text_message? && action.match_message?
         result ||= message.document? && action.match_document?
         result ||= message.callback? && action.match_callback?
