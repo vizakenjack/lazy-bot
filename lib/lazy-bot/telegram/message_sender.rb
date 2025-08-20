@@ -138,9 +138,36 @@ module LazyBot
     end
 
     def send_in_chunks(args, chunk_size = 4000)
-      text.chars.each_slice(chunk_size) do |chunk|
-        bot.api.send_message(**args.merge(text: chunk.join))
+      text = args[:text]
+      lines = text.split("\n")
+      buffer = ""
+
+      lines.each_with_index do |line, idx|
+        # +1 for the newline unless it's the last line
+        line_with_newline = idx < lines.size - 1 ? "#{line}\n" : line
+
+        if buffer.length + line_with_newline.length > chunk_size
+          # If buffer is not empty, send it
+          unless buffer.empty?
+            bot.api.send_message(**args.merge(text: buffer))
+            buffer = ""
+          end
+
+          # If the line itself is too big, split it by chunk_size
+          if line_with_newline.bytesize > chunk_size
+            line_with_newline.chars.each_slice(chunk_size) do |slice|
+              bot.api.send_message(**args.merge(text: slice.join))
+            end
+          else
+            buffer = line_with_newline
+          end
+        else
+          buffer << line_with_newline
+        end
       end
+
+      # Send any remaining buffer
+      bot.api.send_message(**args.merge(text: buffer)) unless buffer.empty?
     end
 
     def build_action_response(params)
