@@ -134,6 +134,8 @@ module LazyBot
     rescue StandardError => e
       if e.message.include?('can\'t parse entities')
         return send_text(**args.merge(parse_mode: nil))
+      else
+        MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
       end
     end
 
@@ -162,7 +164,7 @@ module LazyBot
             buffer = line_with_newline
           end
         else
-          buffer << line_with_newline
+          buffer = "#{buffer}#{line_with_newline}"
         end
       end
 
