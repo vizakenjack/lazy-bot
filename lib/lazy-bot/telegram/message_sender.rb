@@ -132,6 +132,7 @@ module LazyBot
         bot.api.send_message(**args)
       end
     rescue StandardError => e
+      binding.pry if DEVELOPMENT
       if e.message.include?('can\'t parse entities')
         return send_text(**args.merge(parse_mode: nil))
       else
@@ -144,13 +145,21 @@ module LazyBot
       lines = text.split("\n")
       buffer = ""
 
+      is_in_block = false
+      prepend_pre = false
       lines.each_with_index do |line, idx|
+        is_in_block = true if line.start_with?("<pre")
+        is_in_block = false if line.start_with?("</pre")
         # +1 for the newline unless it's the last line
         line_with_newline = idx < lines.size - 1 ? "#{line}\n" : line
 
         if buffer.length + line_with_newline.length > chunk_size
           # If buffer is not empty, send it
           unless buffer.empty?
+            if is_in_block
+              buffer = "#{buffer}</pre>"
+              prepend_pre = true
+            end
             bot.api.send_message(**args.merge(text: buffer))
             buffer = ""
           end
@@ -158,6 +167,11 @@ module LazyBot
           # If the line itself is too big, split it by chunk_size
           if line_with_newline.bytesize > chunk_size
             line_with_newline.chars.each_slice(chunk_size) do |slice|
+              to_send = slice.join
+              if prepend_pre
+                to_send = "<pre>#{to_send}"  
+                prepend_pre = false
+              end
               bot.api.send_message(**args.merge(text: slice.join))
             end
           else
@@ -166,6 +180,10 @@ module LazyBot
         else
           buffer = "#{buffer}#{line_with_newline}"
         end
+      end
+
+      if prepend_pre
+        buffer = "<pre>#{buffer}"  
       end
 
       # Send any remaining buffer
