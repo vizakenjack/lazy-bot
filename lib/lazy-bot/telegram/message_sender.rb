@@ -125,70 +125,90 @@ module LazyBot
       bot.api.send_document(**args)
     end
 
-    def send_text(args)
-      if text.length >= 4000
-        send_in_chunks(args)
-      else
-        bot.api.send_message(**args)
-      end
-    rescue StandardError => e
-      binding.pry if DEVELOPMENT
-      if e.message.include?('can\'t parse entities')
-        return send_text(**args.merge(parse_mode: nil))
-      else
-        MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
-      end
-    end
+   def send_text(args)
+     if text.length >= 4000
+       send_in_chunks(args)
+     else
+       bot.api.send_message(**args)
+     end
+   rescue StandardError => e
+     binding.pry if DEVELOPMENT
+     if e.message.include?('can\'t parse entities')
+       return send_text(**args.merge(parse_mode: nil))
+     else
+       MyLogger.error "Can't send #{text} to user. Error: #{e.message}"
+     end
+   end
 
-    def send_in_chunks(args, chunk_size = 4000)
-      text = args[:text]
-      lines = text.split("\n")
-      buffer = ""
+   def send_in_chunks(args, chunk_size = 4000)
+     text = args[:text]
+     lines = text.split("\n")
+     buffer = ""
 
-      is_in_block = false
-      prepend_pre = false
-      lines.each_with_index do |line, idx|
-        is_in_block = true if line.start_with?("<pre")
-        is_in_block = false if line.start_with?("</pre")
-        # +1 for the newline unless it's the last line
-        line_with_newline = idx < lines.size - 1 ? "#{line}\n" : line
+     is_in_block = false
+     prepend_pre = false
 
-        if buffer.length + line_with_newline.length > chunk_size
-          # If buffer is not empty, send it
-          unless buffer.empty?
-            if is_in_block
-              buffer = "#{buffer}</pre>"
-              prepend_pre = true
-            end
-            bot.api.send_message(**args.merge(text: buffer))
-            buffer = ""
-          end
+     lines.each_with_index do |line, idx|
+       # Проверяем наличие открывающего тега <pre> в любом месте строки
+       is_in_block = true if line.include?("<pre")
 
-          # If the line itself is too big, split it by chunk_size
-          if line_with_newline.bytesize > chunk_size
-            line_with_newline.chars.each_slice(chunk_size) do |slice|
-              to_send = slice.join
-              if prepend_pre
-                to_send = "<pre>#{to_send}"  
-                prepend_pre = false
-              end
-              bot.api.send_message(**args.merge(text: slice.join))
-            end
-          else
-            buffer = line_with_newline
-          end
-        else
-          buffer = "#{buffer}#{line_with_newline}"
-        end
-      end
+       # +1 for the newline unless it's the last line
+       line_with_newline = idx < lines.size - 1 ? "#{line}\n" : line
 
-      if prepend_pre
-        buffer = "<pre>#{buffer}"  
-      end
+       if buffer.length + line_with_newline.length > chunk_size
+         # If buffer is not empty, send it
+         unless buffer.empty?
+           if is_in_block && prepend_pre == false
+             buffer = "#{buffer}</pre>"
+             prepend_pre = true
+           end
+           bot.api.send_message(**args.merge(text: buffer))
+           buffer = ""
+         end
 
-      # Send any remaining buffer
-      bot.api.send_message(**args.merge(text: buffer)) unless buffer.empty?
-    end
+         # If the line itself is too big, split it by chunk_size
+         if line_with_newline.bytesize > chunk_size
+           line_with_newline.chars.each_slice(chunk_size) do |slice|
+             to_send = slice.join
+             if prepend_pre
+               to_send = "<pre>#{to_send}"  
+               prepend_pre = false
+             end
+             # Проверяем закрывающий тег в каждом чанке
+             if to_send.include?("</pre>")
+               is_in_block = false
+               prepend_pre = false
+             end
+             bot.api.send_message(**args.merge(text: to_send))
+           end
+         else
+           if prepend_pre
+             line_with_newline = "<pre>#{line_with_newline}"
+             prepend_pre = false
+           end
+           buffer = line_with_newline
+         end
+       else
+         if prepend_pre && buffer.empty?
+           buffer = "<pre>#{line_with_newline}"
+           prepend_pre = false
+         else
+           buffer = "#{buffer}#{line_with_newline}"
+         end
+       end
+
+       # Проверяем наличие закрывающего тега </pre> в любом месте строки
+       is_in_block = false if line.include?("</pre>")
+     end
+
+     if prepend_pre && !buffer.empty?
+       buffer = "<pre>#{buffer}"  
+     end
+
+     # Send any remaining buffer
+     bot.api.send_message(**args.merge(text: buffer)) unless buffer.empty?
+   end
+    
 
     def build_action_response(params)
       obj = params[:action_response]
