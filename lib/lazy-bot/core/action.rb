@@ -101,6 +101,14 @@ module LazyBot
       false
     end
 
+    def match_precheckout?
+      false
+    end
+
+    def match_successful_payment?
+      false
+    end
+
     def user_state
       user.opts.dig('state', config.bot_id.to_s) || ''
     end

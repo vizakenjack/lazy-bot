@@ -10,7 +10,11 @@ module LazyBot
       @bot = params[:bot]
       @chat = params[:chat]
       # todo: remove params[:id]
-      @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id
+      if params[:message].is_a?(Telegram::Bot::Types::PreCheckoutQuery)
+        @chat_id = params[:message]&.from&.id
+      else
+        @chat_id = params[:chat]&.id || params[:id] || params[:chat_id] || params[:message]&.chat&.id
+      end
       @action_response = build_action_response(params)
       @message = params[:message]
     end

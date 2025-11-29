@@ -18,7 +18,7 @@ module LazyBot
     end
 
     def message_chat
-      if inline_query?
+      if inline_query? || precheckout?
         nil
       elsif callback?
         message.respond_to?(:chat) ?  message.chat : nil
@@ -28,7 +28,11 @@ module LazyBot
     end
 
     def chat_id
-      message_chat.id
+      if precheckout?
+        from.id
+      else
+        message_chat.id
+      end
     end
 
     # only for callback and text
@@ -97,6 +101,14 @@ module LazyBot
       false
     end
 
+    def precheckout?
+      respond_to?(:invoice_payload) && invoice_payload.present?
+    end
+
+    def successful_payment?
+      respond_to?(:successful_payment) && successful_payment.present?
+    end
+
     def reply_date
       return nil unless respond_to?(:reply_to_message)
 
@@ -104,7 +116,7 @@ module LazyBot
     end
 
     def supported?
-      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member? || inline_query? || video? || audio?
+      callback? || text_message? || document? || voice? || photo? ||  new_chat_members? || left_chat_member? || inline_query? || video? || audio? || precheckout? || successful_payment?
     end
 
     def unsupported?

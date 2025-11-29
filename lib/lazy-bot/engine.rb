@@ -133,6 +133,7 @@ module LazyBot
 
     def handle_unknown_message(message)
       text = message.try(:text) || message.try(:data)
+      puts "Unknown message: #{message.to_h}" if ENV['BOT_ENV'] == 'development' || ENV['BOT_ENV'] == 'staging'
       MyLogger.warn("Unknown message: #{text}")
     end
 
@@ -190,6 +191,8 @@ module LazyBot
         result ||= message.audio? && action.match_audio?
         result ||= message.left_chat_member? && action.match_left_chat_member?
         result ||= message.new_chat_members? && action.match_new_chat_members?
+        result ||= message.precheckout? && action.match_precheckout?
+        result ||= message.successful_payment? && action.match_successful_payment?
 
         next unless result
 
