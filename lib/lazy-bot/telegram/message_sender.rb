@@ -225,11 +225,14 @@ module LazyBot
       end
     end
 
-    def build_upload(file_or_url, type)
+    def build_upload(file_or_url, type:)
       if file_or_url.is_a?(String) && file_or_url.start_with?('http')
         file_or_url
-      else
+      elsif file_or_url.is_a?(String)
         Faraday::UploadIO.new(file_or_url, type)
+      else
+        ext = type.to_s.split('/').last.presence || 'jpg'
+        Faraday::UploadIO.new(file_or_url, type, "file.#{ext}")
       end
     end
 
